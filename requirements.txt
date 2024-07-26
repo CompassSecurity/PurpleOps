@@ -72,3 +72,4 @@ gunicorn==20.1.0
 Markdown==3.6
 bleach==6.0.0
 pymdown-extensions==10.8.1
+Pygments==2.18.0
