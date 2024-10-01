@@ -133,8 +133,6 @@ dmypy.json
 *.docx
 *.crt
 *.key
-*.nix
-*.lock
 files/
 custom/testcases
 
