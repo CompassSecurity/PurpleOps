@@ -23,11 +23,11 @@
 {%- endmacro %}
 
 {% macro toast(title) -%}
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-	<div id="toast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+<div class="position-fixed top-0 end-50" style="z-index: 11;margin-top: 100px">
+	<div id="toast" class="toast hide bg-info" role="alert" aria-live="assertive" aria-atomic="true">
 		<div class="toast-header">
-			<div id="toastBody" class="toast-body me-auto"></div>
-			<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+		<div id="toastBody" class="toast-body me-auto"></div>
+		<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
 		</div>
 	</div>
 </div>
