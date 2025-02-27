@@ -141,9 +141,10 @@ class TestCaseTemplate(db.Document):
     rednotes = db.StringField(default="")
     uuid = db.StringField(default="")
     provider = db.StringField(default="")
-    priority = db.StringField(default="")    
+    expectedprevention = db.BooleanField()
+    expectedalertcreation = db.BooleanField()
+    expectedseverity = db.StringField(default="")
     priorityurgency = db.StringField(default="")
-    expectedalertseverity = db.StringField(default="")  
 
 class TestCase(db.Document):
     assessmentid = db.StringField()
@@ -163,7 +164,7 @@ class TestCase(db.Document):
     preventionsources = db.ListField(db.StringField())
     detectionsources = db.ListField(db.StringField())
     state = db.StringField(default="Pending")
-    prevented = db.StringField()
+    prevented = db.BooleanField()
     preventedrating = db.StringField()
     alerted = db.BooleanField()
     alertseverity = db.StringField()
@@ -171,7 +172,10 @@ class TestCase(db.Document):
     detectionrating = db.StringField()
     priority = db.StringField(default="Prevent and Alert")
     priorityurgency = db.StringField()
-    expectedalertseverity = db.StringField()
+    expectedprevention = db.BooleanField(default=False)
+    expectedalertcreation = db.BooleanField(default=True)
+    expectedincidentcreation = db.BooleanField(default=False)
+    expectedseverity = db.StringField()
     starttime = db.DateTimeField()
     endtime = db.DateTimeField()
     detecttime = db.DateTimeField()
@@ -184,15 +188,23 @@ class TestCase(db.Document):
     outcome = db.StringField(default="")
     testcasescore = db.IntField()
     alertseverityscore = db.IntField()
+    incidentcreated = db.BooleanField()
+    incidentseverity = db.StringField()
+    incidentseverityscore = db.IntField()
+    incidenttime = db.DateTimeField()
+    eventtoalert = db.StringField()
+    alerttoincident = db.StringField() 
 
     def to_json(self, raw=False):
         jsonDict = {}
         for field in ["assessmentid", "name", "objective", "actions", "rednotes", "bluenotes",
                       "uuid", "mitreid", "tactic", "state", "prevented", "preventedrating",
                       "alerted", "alertseverity", "logged", "detectionrating",
-                      "priority", "priorityurgency", "expectedalertseverity", "visible", "outcome", "testcasescore", "alertseverityscore"]:
+                      "priority", "priorityurgency", "expectedseverity", "expectedincidentcreation", 
+                      "visible", "outcome", "testcasescore", "alertseverityscore", "incidentcreated", 
+                      "incidentseverity", "incidentseverityscore", "eventtoalert", "alerttoincident", "expectedprevention", "expectedalertcreation" ]:
             jsonDict[field] = esc(self[field], raw)
-        for field in ["id", "detecttime", "modifytime", "starttime", "endtime", "alerttime", "preventtime"]:
+        for field in ["id", "detecttime", "modifytime", "starttime", "endtime", "alerttime", "preventtime", "incidenttime"]:
             jsonDict[field] = str(self[field]).split(".")[0]
         for field in ["tags", "sources", "targets", "tools", "controls", "preventionsources", "detectionsources"]:
             jsonDict[field] = self.to_json_multi(field)

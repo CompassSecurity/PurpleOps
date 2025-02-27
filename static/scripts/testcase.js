@@ -102,7 +102,7 @@ $('#objective, #actions, #rednotes, #bluenotes').on('input', function(event) {
 // Dynamically update prevent fields
 $('input[name="prevented"]').on('change', function() {
 	current = $('input[name="prevented"]:checked').val()
-	if (["No", "N/A", ""].includes(current)) {
+	if (["No", ""].includes(current)) {
 		$("#preventedrating").val(current.replace("No", "0.0"))
 		$("#preventedrating-container").hide()
 		$("#preventionsources-container").hide()
@@ -139,8 +139,6 @@ $('input[name="alerted"]').on('change', function() {
 	if (current == "Yes") {
 		$("#alert-container").show()
 		$("#detectionsources-container").show()
-		$("#detection-container").hide()
-		$("#logged-container").hide()
 		$('input[name="logged"]').prop('checked', false)
 		$('#log-yes').prop("checked", true)
 		if ($('#detectionrating').val() == "0.0") {
@@ -151,26 +149,24 @@ $('input[name="alerted"]').on('change', function() {
 		$("#detectionsources-container").hide()
 		$("#time-alerttime").val("")
 		$("#detectionsources").val("")
-		$("#detectionsources").val("")
 		$("#alertseverity").val("")
-		$("#logged-container").show()
-		$("#detection-container").hide()
 	} else {
 		$("#alert-container").hide()
 		$("#detectionsources-container").hide()
-		$("#logged-container").hide()
-		$("#detection-container").hide()
 	}
 }).trigger('change')
 
-// Dynamically update logged fields
-$('input[name="logged"]').on('change', function() {
-	current = $('input[name="logged"]:checked').val()
-	if (current == "Yes") {
-		$('#detection-container').show()
+// Dynamically update incident created fileds
+$('input[name="incidentcreated"]').on('change', function() {
+	current = $('input[name="incidentcreated"]:checked').val()
+	if (current == "Yes") {	
+		$("#incidentcreated-container").show()
 	} else if (current == "No") {
-		$('#detectionrating').val("0.0")
-		$('#detection-container').hide()
+		$("#incidentcreated-container").hide()
+		$("#incidentseverity").val("")
+		$("#time-incidenttime").val("")
+	} else {
+		$("#incidentcreated-container").hide()
 	}
 }).trigger('change')
 
@@ -235,6 +231,12 @@ $( document ).ready(function() {
 		endTime.setMinutes(endTime.getMinutes() - offset * 2);
 		$("#time-preventtime").val(endTime.toISOString().slice(0,16))
 	}
+
+	if ($("#time-incidenttime").val()) {
+		endTime = new Date($("#time-incidenttime").val());
+		endTime.setMinutes(endTime.getMinutes() - offset * 2);
+		$("#time-incidenttime").val(endTime.toISOString().slice(0,16))
+	}	
 
 });
 

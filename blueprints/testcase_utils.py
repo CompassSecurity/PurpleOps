@@ -26,7 +26,7 @@ def testcasevisibility(id):
 def testcaseclone(id):
     orig = TestCase.objects(id=id).first()
     newcase = TestCase()
-    copy = ["name", "assessmentid", "objective", "actions", "rednotes", "mitreid", "uuid", "tactic", "tools", "tags", "preventionsources", "detectionsources"]
+    copy = ["name", "assessmentid", "objective", "actions", "rednotes", "mitreid", "tactic", "tools", "tags", "expectedprevention", "expectedalertcreation", "expectedincidentcreation", "expectedseverity" , "priorityurgency"]
     for field in copy:
         newcase[field] = orig[field]
     newcase.name = orig["name"] + " (Copy)"

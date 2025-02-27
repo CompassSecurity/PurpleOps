@@ -100,7 +100,7 @@
 					<span class="input-group-text px-1 text-danger"
 						style="writing-mode: vertical-lr">Objective</span>
 					<textarea class="form-control" name="objective" id="objective"
-						style="min-height: 5em"{% if current_user.has_role("Blue") %} disabled{% endif %}>{{ testcase.objective }}</textarea>
+						style="min-height: 5.5em"{% if current_user.has_role("Blue") %} disabled{% endif %}>{{ testcase.objective }}</textarea>
 				</div>
 				<div class="input-group my-3" id="red-actions">
 					<span class="input-group-text px-1 text-danger"
@@ -121,13 +121,90 @@
 						style="resize: none; min-height: 1.5em;"{% if current_user.has_role("Blue") %} disabled{% endif %}>{{ testcase.uuid }}</textarea>
 				</div>
 		</div>
-
 	</div>
+	<div class="row my-3">
+		<div class="col">
+			<span class="input-group-text text-danger rounded-0 rounded-top border-bottom-0">Expected Result</span>
+			<div class="form-group row m-0 py-2 rounded-bottom" style="border: 1px solid #ededed">
+				<div id="urgency-container" class="row m-0 p-0 my-1">
+					<label for="priorityurgency" class="col-6 col-form-label">Priority</label>
+					<div class="col-6">
+						<select class="form-select p-1" id="priorityurgency" name="priorityurgency" value="{{testcase.priorityurgency or ''}}"{% if current_user.has_role("Blue") %} disabled{% endif %}>
+							<option value="" hidden></option>
+							<option value="N/A" hidden>N/A</option>
+							{% for val in ["Low", "Medium", "High"] %}
+								<option value="{{ val }}" {% if testcase.priorityurgency==val %} selected{% endif%}>{{ val }}</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+				<div class="my-1"></div>
+				<label class="col-6 col-form-label">Prevention</label>
+				<div class="col-6">
+					<div class="form-check form-check-inline">
+						<input class="form-check-input" type="radio" id="expected-prevention-yes" name="expectedprevention" value="Yes"
+							{% if testcase.expectedprevention %} checked{% endif%}{% if current_user.has_role("Blue") %} disabled{% endif %}>
+						<label class="form-check-label" for="expected-prevention-yes">Yes</label>
+					</div>					
+					<div class="form-check form-check-inline">
+						<input class="form-check-input" type="radio" id="expected-prevention-no" name="expectedprevention" value="No"
+							{% if not testcase.expectedprevention %} checked{% endif%}{% if current_user.has_role("Blue") %} disabled{% endif %}>
+						<label class="form-check-label" for="expected-prevention-no">No</label>
+					</div>
+					<input class="form-check-input" type="radio" id="expected-prevention-null" name="expectedprevention" value=""{% if testcase.expectedprevention==none %} checked{% endif%} hidden>
+				</div>
+				<div class="my-1"></div>
+				<label class="col-6 col-form-label">Alert</label>
+				<div class="col-6">
+					<div class="form-check form-check-inline">
+						<input class="form-check-input" type="radio" id="alert-creation-yes" name="expectedalertcreation" value="Yes"
+							{% if testcase.expectedalertcreation %} checked{% endif%}{% if current_user.has_role("Blue") %} disabled{% endif %}>
+						<label class="form-check-label" for="alert-creation-yes">Yes</label>
+					</div>					
+					<div class="form-check form-check-inline">
+						<input class="form-check-input" type="radio" id="alert-creation-no" name="expectedalertcreation" value="No"
+							{% if not testcase.expectedalertcreation %} checked{% endif%}{% if current_user.has_role("Blue") %} disabled{% endif %}>
+						<label class="form-check-label" for="alert-creation-no">No</label>
+					</div>
+					<input class="form-check-input" type="radio" id="alert-creation-null" name="expectedalertcreation" value=""{% if testcase.expectedalertcreation==none %} checked{% endif%} hidden>
+				</div>
+				<div class="my-1"></div>
+				<label class="col-6 col-form-label">Incident</label>
+				<div class="col-6">
+					<div class="form-check form-check-inline">
+						<input class="form-check-input" type="radio" id="incident-creation-yes" name="expectedincidentcreation" value="Yes"
+							{% if testcase.expectedincidentcreation %} checked{% endif%}{% if current_user.has_role("Blue") %} disabled{% endif %}>
+						<label class="form-check-label" for="incident-creation-yes">Yes</label>
+					</div>					
+					<div class="form-check form-check-inline">
+						<input class="form-check-input" type="radio" id="incident-creation-no" name="expectedincidentcreation" value="No"
+							{% if not testcase.expectedincidentcreation %} checked{% endif%}{% if current_user.has_role("Blue") %} disabled{% endif %}>
+						<label class="form-check-label" for="incident-creation-no">No</label>
+					</div>
+					<input class="form-check-input" type="radio" id="incident-creation-null" name="expectedincidentcreation" value=""{% if testcase.expectedincidentcreation==none %} checked{% endif%} hidden>
+				</div>
+				<div class="my-1"></div>
+				<div id="expectedseverity-container" class="row m-0 p-0 my-1">
+					<label for="expectedseverity" class="col-6 col-form-label">Severity</label>
+					<div class="col-6">
+						<select class="form-select p-1" id="expectedseverity" name="expectedseverity" value="{{testcase.expectedseverity or ''}}"{% if current_user.has_role("Blue") %} disabled{% endif %}>
+							<option value="" hidden></option>
+							<option value="N/A" hidden>N/A</option>
+							{% for val in ["Informational", "Low", "Medium", "High", "Critical"] %}
+								<option value="{{ val }}" {% if testcase.expectedseverity==val %} selected{% endif%}>{{ val }}</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div class="row">
 		<div class="row m-0">
 			<ul class="list-group p-0" id="evidence-red">
 				{% if not current_user.has_role("Blue") %}
-				<li class="list-group-item">
+				<li class="list-group-item" style="padding-left: 0px;padding-right: 0px;">
 					<div class="input-group input-group-sm">
 						<label class="input-group-text text-danger" for="redfiles">Upload
 							Evidence</label>

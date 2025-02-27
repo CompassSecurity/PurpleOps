@@ -50,6 +50,42 @@ def runtestcasepost(id):
         }
     )
 
+def format_time_difference(d1, d2):
+
+    if not d1 or not d2:
+        return None
+
+    if d2 > d1:
+        return None
+
+    delta = abs(d1-d2)
+
+    days = delta.days
+    hours, remainder = divmod(delta.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+
+    parts = []
+    if days > 0:
+        parts.append(f"{days}d")
+    if hours > 0 or days > 0:
+        parts.append(f"{hours}h")
+    parts.append(f"{minutes}m")
+
+    return  " ".join(parts)
+
+def calculate_severity_score(severity, expected_severity):
+    severity_levels = {
+        "Critical": ["Critical"],
+        "High": ["Critical", "High"],
+        "Medium": ["Critical", "High", "Medium"],
+        "Low": ["Critical", "High", "Medium", "Low"],
+        "Informational": ["Critical", "High", "Medium", "Low", "Informational"]
+    }
+    if severity and expected_severity:
+        accepted_severity_list = severity_levels.get(expected_severity, [])
+        return 100 if severity in accepted_severity_list else 0
+    return None
+    
 @blueprint_testcase.route('/testcase/<id>',methods = ['POST'])
 @auth_required()
 @roles_accepted('Admin', 'Red', 'Blue')
@@ -61,10 +97,10 @@ def testcasesave(id):
     if not testcase.visible and isBlue:
         return ("", 403)
 
-    directFields = ["name", "objective", "actions", "rednotes", "bluenotes", "uuid", "mitreid", "tactic", "state", "prevented", "preventedrating", "alertseverity", "logged", "detectionrating", "priority", "priorityurgency", "expectedalertseverity"] if not isBlue else ["bluenotes", "prevented", "alerted", "alertseverity","state"] 
+    directFields = ["name", "objective", "actions", "rednotes", "bluenotes", "uuid", "mitreid", "tactic", "state", "preventedrating", "alertseverity", "logged", "detectionrating", "priority", "priorityurgency", "expectedseverity", "incidentseverity"] if not isBlue else ["bluenotes", "prevented", "alerted", "alertseverity","state", "incidentcreated", "incidentseverity"] 
     listFields = ["sources", "targets", "tools", "controls", "tags", "preventionsources", "detectionsources"]
-    boolFields = ["alerted", "logged", "visible"] if not isBlue else ["alerted", "logged"]
-    timeFields = ["starttime", "endtime", "alerttime", "preventtime"]
+    boolFields = ["alerted", "logged", "visible", "incidentcreated", "prevented", "expectedincidentcreation", "expectedprevention", "expectedalertcreation"] if not isBlue else ["prevented", "alerted", "logged","incidentcreated"]
+    timeFields = ["starttime", "endtime", "alerttime", "preventtime", "incidenttime"]
     fileFields = ["redfiles", "bluefiles"] if not isBlue else ["bluefiles"]
 
     # only allow state update from blue if correct state is sent and testcase is in changable state
@@ -120,80 +156,57 @@ def testcasesave(id):
     if "logged" in request.form and request.form["logged"] == "Yes" and not testcase.detecttime:
         testcase.detecttime = datetime.utcnow()
 
-    if testcase.prevented in ["Yes", "Partial"]:
-        if testcase.alerted: 
-            testcase.outcome = "Prevented and Alerted"
-        else:
-            testcase.outcome = "Prevented"
-    elif testcase.alerted:
-        testcase.outcome = "Alerted"
-    elif testcase.logged:
-        testcase.outcome = "Logged"
-    elif not testcase.logged and testcase.prevented:
+    # Calculate alert severity score
+    testcase.alertseverityscore = calculate_severity_score(testcase.alertseverity, testcase.expectedseverity)
+    
+    # Calculate incident severity score
+    testcase.incidentseverityscore = calculate_severity_score(testcase.incidentseverity, testcase.expectedseverity)
+
+    # Calculate testcase outcome (Note that Prevented or alerted but not Logged is not catched and will be "missed")
+    if not testcase.logged:
         testcase.outcome = "Missed"
     else:
-        testcase.outcome = ""
-
-    # Calculate Testcase Outcome Score based on expected result
-    if testcase.priority == "Prevent and Alert":
-        match testcase.outcome:
-            case "Prevented and Alerted":
-                testcase.testcasescore = 100
-            case "Prevented":
-                testcase.testcasescore = 75
-            case "Alerted":
-                testcase.testcasescore = 50
-            case "Logged":
-                testcase.testcasescore = 25
-            case "Missed":
-                testcase.testcasescore = 0
-
-    elif testcase.priority == "Prevent":
-        match testcase.outcome:
-            case "Prevented and Alerted":
-                testcase.testcasescore = 100
-            case "Prevented":
-                testcase.testcasescore = 100
-            case "Alerted":
-                testcase.testcasescore = 75
-            case "Logged":
-                testcase.testcasescore = 25
-            case "Missed":
-                testcase.testcasescore = 0
-
-    elif testcase.priority == "Alert":
-        match testcase.outcome:
-            case "Prevented and Alerted":
-                testcase.testcasescore = 100
-            case "Prevented":
-                testcase.testcasescore = 75
-            case "Alerted":
-                testcase.testcasescore = 100
-            case "Logged":
-                testcase.testcasescore = 25
-            case "Missed":
-                testcase.testcasescore = 0
-    else:
-     testcase.testcasescore = None
-
-    # Calculate alertseverityscore based on expectedalertseverity
-    if testcase.alertseverity and testcase.expectedalertseverity and testcase.priority != "N/A":
-        if testcase.expectedalertseverity == "Critical":
-            acceptedseveritylist = ["Critical"]
-        if testcase.expectedalertseverity == "High":
-            acceptedseveritylist = ["Critical", "High"]
-        if testcase.expectedalertseverity == "Medium":
-            acceptedseveritylist = ["Critical", "High", "Medium"]
-        if testcase.expectedalertseverity == "Low":
-            acceptedseveritylist = ["Critical", "High", "Medium", "Low"]
-        if testcase.expectedalertseverity == "Informational":
-            acceptedseveritylist = ["Critical", "High", "Medium", "Low", "Informational"]
-        if testcase.alertseverity in acceptedseveritylist:
-            testcase.alertseverityscore = 100
+        if testcase.prevented and testcase.alerted:
+            testcase.outcome = "Prevented and Alerted"
+        elif testcase.prevented:
+            testcase.outcome = "Prevented"
+        elif testcase.alerted:
+            testcase.outcome = "Alerted"
         else:
-            testcase.alertseverityscore = 0
+            testcase.outcome = "Logged"
+
+    # Calculate testcase score
+    criteriacounter = 1
+    if testcase.expectedalertcreation:
+        criteriacounter = criteriacounter + 1
+    if testcase.expectedprevention:
+        criteriacounter = criteriacounter + 1
+    score = 0
+
+    criteriavalue = 100 / criteriacounter
+
+    if testcase.logged:
+        score = score + criteriavalue
+    if testcase.expectedalertcreation and  testcase.alerted:
+        score = score + criteriavalue
+    if testcase.expectedprevention and testcase.prevented:
+        score = score + criteriavalue
+
+    testcase.testcasescore = score
+
+    # Calculate event start time to alert time
+    diff_result = format_time_difference(testcase.alerttime, testcase.starttime)
+    if diff_result is not None:
+        testcase.eventtoalert = diff_result
     else:
-        testcase.alertseverityscore = None
+        testcase.eventtoalert = ""
+
+    # Calculate alert to incident
+    diff_result = format_time_difference(testcase.incidenttime, testcase.alerttime)
+    if diff_result is not None:
+        testcase.alerttoincident = diff_result
+    else:
+        testcase.alerttoincident = ""
 
     # This is some sanity check code where we check if some of the UI elements are out of sync with the backend. This is trggered by the horrible tabs bug
     # Does not fix user not saving test case before navigating away

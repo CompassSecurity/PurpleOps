@@ -25,9 +25,10 @@ def testcasetemplates(id):
             objective = template.objective,
             actions = template.actions,
             rednotes = template.rednotes,
-            priority = template.priority,
+            expectedprevention = template.expectedprevention,
+            expectedalertcreation = template.expectedalertcreation,
             priorityurgency = template.priorityurgency,
-            expectedalertseverity = template.expectedalertseverity,
+            expectedseverity = template.expectedseverity,
             assessmentid = id
         ).save()
         newcases.append(newcase.to_json())
@@ -75,7 +76,7 @@ def testcasecampaign(id):
     for testcase in campaignTestcases:
         newcase = TestCase()
         newcase.assessmentid = id
-        for field in ["name", "mitreid", "tactic", "objective", "actions", "tools", "uuid", "tags", "priority", "priorityurgency", "expectedalertseverity"]:
+        for field in ["name", "mitreid", "tactic", "objective", "actions", "tools", "tags", "priorityurgency", "expectedseverity", "expectedincidentcreation", "expectedalertcreation", "expectedprevention"]:
             if field in testcase:
                 if field not in ["tools", "tags"]:
                     newcase[field] = testcase[field]
@@ -145,10 +146,12 @@ def importentire():
         for field in ["name", "objective", "actions", "rednotes", "bluenotes",
                       "uuid", "mitreid", "tactic", "state", "prevented", "preventedrating",
                       "alerted", "alertseverity", "logged", "detectionrating",
-                      "priority", "priorityurgency", "expectedalertseverity", "visible", "outcome", "testcasescore", "alertseverityscore"]:
+                      "priority", "priorityurgency", "expectedseverity", "visible", 
+                      "outcome", "testcasescore", "alertseverityscore", "expectedincidentcreation", 
+                      "incidentcreated", "incidentseverity", "incidentseverityscore", "expectedalertcreation", "expectedprevention"]:
             newTestcase[field] = oldTestcase[field]
 
-        for field in ["starttime", "endtime", "detecttime", "modifytime", "alerttime", "preventtime"]:
+        for field in ["starttime", "endtime", "detecttime", "modifytime", "alerttime", "preventtime" ,"incidenttime" ]:
             if oldTestcase[field] != "None":
                 newTestcase[field] = datetime.datetime.strptime(oldTestcase[field].split(".")[0], "%Y-%m-%d %H:%M:%S")
 
