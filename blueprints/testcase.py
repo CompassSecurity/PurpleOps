@@ -98,9 +98,9 @@ def testcasesave(id):
         return ("", 403)
 
     directFields = ["name", "objective", "actions", "rednotes", "bluenotes", "uuid", "mitreid", "tactic", "state", "preventedrating", "alertseverity", "logged", "detectionrating", "priority", "priorityurgency", "expectedseverity", "incidentseverity"] if not isBlue else ["bluenotes", "prevented", "alerted", "alertseverity","state", "incidentcreated", "incidentseverity"] 
-    listFields = ["sources", "targets", "tools", "controls", "tags", "preventionsources", "detectionsources"]
+    listFields = ["sources", "targets", "tools", "controls", "tags", "preventionsources", "detectionsources"] if not isBlue else ["tags" , "preventionsources", "detectionsources"]
     boolFields = ["alerted", "logged", "visible", "incidentcreated", "prevented", "expectedincidentcreation", "expectedprevention", "expectedalertcreation"] if not isBlue else ["prevented", "alerted", "logged","incidentcreated"]
-    timeFields = ["starttime", "endtime", "alerttime", "preventtime", "incidenttime"]
+    timeFields = ["starttime", "endtime", "alerttime", "preventtime", "incidenttime"] if not isBlue else ["alerttime", "preventtime", "incidenttime"]
     fileFields = ["redfiles", "bluefiles"] if not isBlue else ["bluefiles"]
 
     # only allow state update from blue if correct state is sent and testcase is in changable state

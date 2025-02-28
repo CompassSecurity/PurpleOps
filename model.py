@@ -192,8 +192,8 @@ class TestCase(db.Document):
     incidentseverity = db.StringField()
     incidentseverityscore = db.IntField()
     incidenttime = db.DateTimeField()
-    eventtoalert = db.StringField()
-    alerttoincident = db.StringField() 
+    eventtoalert = db.StringField(default="")
+    alerttoincident = db.StringField(default="")
 
     def to_json(self, raw=False):
         jsonDict = {}
