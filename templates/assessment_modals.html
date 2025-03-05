@@ -29,14 +29,14 @@
 <!-- Select testcases from templates modal -->
 {{ macros.modalHead(name="testcaseTemplates", title="Select Testcase", xl=True) }}
 <div class="mb-3">
-    <table id="testcaseTemplateTable" data-toggle="table" data-search="true" data-click-to-select="true" data-maintain-meta-data="true" data-sort-name="add" data-sort-order="desc" data-filter-control="true" data-show-search-clear-button="true" data-height="600" data-silent-sort="false" data-pagination="true">
+    <table id="testcaseTemplateTable" data-toggle="table" data-pagination="true" data-click-to-select="true" data-maintain-meta-data="true" data-sort-name="add" data-sort-order="desc" data-filter-control="true" data-silent-sort="false">
         <thead>
             <tr>
                 <th data-field="add" data-checkbox="true" data-sortable="true">Add</th>
                 <th data-field="src" id="nameField" data-filter-control="select">Src</th>
                 <th data-field="tactic" data-sortable="true" data-filter-control="select">Tactic</th>
-                <th data-field="technique">Technique</th>
-                <th data-field="title">Title</th>
+                <th data-field="technique" data-sortable="true" data-filter-control="input">Technique</th>
+                <th data-field="title" data-sortable="true" data-filter-control="input">Title</th>
                 <th data-field="id" data-visible="false">ID</th>
             </tr>
         </thead>
