@@ -66,6 +66,8 @@ $('#testcaseTemplatesButton').click(function() {
 				$('#assessmentTable').bootstrapTable('append', [formatRow(result)])
 				showToast('Testcase Added');
 			})
+			// clear selection after import
+			$('#testcaseTemplateTable').bootstrapTable('uncheckAll');
 			$('#testcaseTemplatesModal').modal('hide')
 		}
 	});
