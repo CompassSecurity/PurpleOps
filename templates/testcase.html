@@ -78,6 +78,7 @@
             {% include 'testcase_blue.html' %}
         </div>
     </div>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 </form>
 <script src="/static/scripts/testcase.js"></script> 
 

@@ -8,7 +8,7 @@ from flask_security import auth_required, roles_accepted, current_user
 
 blueprint_testcase_utils = Blueprint('blueprint_testcase_utils', __name__)
 
-@blueprint_testcase_utils.route('/testcase/<id>/toggle-visibility', methods = ['GET'])
+@blueprint_testcase_utils.route('/testcase/<id>/toggle-visibility', methods = ['POST'])
 @auth_required()
 @roles_accepted('Admin', 'Red')
 @user_assigned_assessment
@@ -19,7 +19,7 @@ def testcasevisibility(id):
         
     return jsonify(newcase.to_json()), 200
 
-@blueprint_testcase_utils.route('/testcase/<id>/clone', methods = ['GET'])
+@blueprint_testcase_utils.route('/testcase/<id>/clone', methods = ['POST'])
 @auth_required()
 @roles_accepted('Admin', 'Red')
 @user_assigned_assessment
@@ -34,7 +34,7 @@ def testcaseclone(id):
 
     return jsonify(newcase.to_json()), 200
 
-@blueprint_testcase_utils.route('/testcase/<id>/delete', methods = ['GET'])
+@blueprint_testcase_utils.route('/testcase/<id>/delete', methods = ['POST'])
 @auth_required()
 @roles_accepted('Admin', 'Red')
 @user_assigned_assessment

@@ -92,9 +92,13 @@ $("#userDetailForm").submit(function(e){
 
 // AJAX DELETE user call
 $('#deleteUserButton').click(function() {
+	var csrf_token = $('meta[name="csrf-token"]').attr('content');
 	$.ajax({
 		url: '/manage/access/user/' + rowData.id,
 		type: 'DELETE',
+		headers: {
+			'X-CSRFToken': csrf_token
+		},
 		success: function(result) {
 			$('#userTable').bootstrapTable('removeByUniqueId', rowData.id)
 			$('#deleteUserModal').modal('hide')

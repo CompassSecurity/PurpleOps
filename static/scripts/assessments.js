@@ -96,9 +96,13 @@ $("#importAssessmentForm").submit(function(e){
 
 // AJAX DELETE assessment call
 $('#deleteAssessmentButton').click(function() {
+	var csrf_token = $('meta[name="csrf-token"]').attr('content');
 	$.ajax({
 		url: `/assessment/${rowData.id}`,
 		type: 'DELETE',
+		headers: {
+			'X-CSRFToken': csrf_token
+		},
 		success: function(result) {
 			$('#assessmentsTable').bootstrapTable('removeByUniqueId', rowData.id)
 			$('#deleteAssessmentModal').modal('hide')

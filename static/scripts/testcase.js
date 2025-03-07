@@ -12,11 +12,14 @@ $('.multiNew').click(function(event) {
 
 // When the source/target etc. table/modal is saved, post updates and refresh table
 $('.multiButton').click(function(event) {
+	var csrf_token = $('meta[name="csrf-token"]').attr('content');
 	type = event.target.id.replace("multi", "").replace("Button", "").toLowerCase() + "s" // Hacky
 	$.ajax({
 		url: `${$("#assessment-crumb-button").attr("href")}/multi/${type}`,
 		type: 'POST',
-		
+		headers: {
+			'X-CSRFToken': csrf_token
+		},
 		data: JSON.stringify({
 			data: $(`#${type}Table`).bootstrapTable("getData")
 		}),
@@ -281,6 +284,7 @@ $("#run-button").click(function(){
 
 // Delete evidence AJAX handler
 $(document).on("click", ".evidence-delete", function(event) {
+	var csrf_token = $('meta[name="csrf-token"]').attr('content');
 	target = event.target.tagName == "I" ? event.target.parentNode : event.target
 	colour = $(target).attr("class").includes("evidence-red") ? "red" : "blue"
 	url = $(target).next("a").attr("href").split("?")[0]
@@ -289,6 +293,9 @@ $(document).on("click", ".evidence-delete", function(event) {
 	$.ajax({
 		url: url,
 		type: 'DELETE',
+		headers: {
+			'X-CSRFToken': csrf_token
+		},
 		success: function(result) {
 			$(target).parent().remove()
 		}

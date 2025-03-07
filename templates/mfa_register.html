@@ -55,6 +55,7 @@
             </div>
         </div>
         {% endif %}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     </form>
     {% if chosen_method=="authenticator" and chosen_method in choices %}
     <hr>
@@ -67,6 +68,7 @@
         </div>
         <input id="submit" name="submit" type="submit" value="Submit Code" class="btn btn-primary w-100 " >
         {{ macros.render_field_errors(two_factor_verify_code_form.code) }}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     </form>
     {% endif %}
 

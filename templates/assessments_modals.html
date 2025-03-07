@@ -10,6 +10,7 @@
 			<label class="col-form-label">Description</label>
 			<textarea class="form-control" name="description" placeholder="The purpose of this engagement is to..." required id="description" autocomplete="off"></textarea>
 		</div>
+		<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 	</form>
 	{{ macros.modalTail(name="newAssessment", cancelLabel="Cancel", actionLabel="Create") }}
 </form>
@@ -26,5 +27,6 @@
 		<p>Select the <code>Assessment.zip</code> file output from <code>Export > Entire Assessment</code>.</p>
 		<input class="form-control" type="file" id="formFile" name="file" accept=".zip,application/zip" autocomplete="off">
 	</div>
+	<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 	{{ macros.modalTail(name="deleteAssessment", cancelLabel="Cancel", actionLabel="Import") }}
 </form>

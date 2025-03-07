@@ -38,6 +38,7 @@
             <input id="code" name="code" placeholder="XXXXXX" type="text" value="" required class="form-control">
             <label for="code">Authentication Code</label> 
         </div>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <input id="submit" name="submit" type="submit" value="Submit Code" class="btn btn-primary w-100 " >
     </form>
 </main>

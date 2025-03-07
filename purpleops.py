@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, redirect
 from flask_security import Security, auth_required, current_user
 
+from flask_wtf.csrf import CSRFProtect
+
 from blueprints import access, assessment, assessment_utils, assessment_import, assessment_export, testcase, testcase_utils
 
 
@@ -24,6 +26,7 @@ app.register_blueprint(testcase_utils.blueprint_testcase_utils)
 db.init_app(app)
 
 security = Security(app, user_datastore)
+csrf = CSRFProtect(app)
 
 @app.route('/')
 @app.route('/index')

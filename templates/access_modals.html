@@ -30,6 +30,7 @@
         {% endfor %}
       </select>
     </div>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
   </form>
   {{ macros.modalTail(name="userDetail", cancelLabel="Close", actionLabel="Create") }}
 </form>

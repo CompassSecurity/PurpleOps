@@ -53,9 +53,13 @@ $("#newTestcaseForm").submit(function(e){
 
 // AJAX new testcase from template POST and table append
 $('#testcaseTemplatesButton').click(function() {
+	var csrf_token = $('meta[name="csrf-token"]').attr('content');
 	$.ajax({
 		url: `/assessment/${window.location.href.split("/").slice(-1)[0]}/import/template`,
 		type: 'POST',
+		headers: {
+			'X-CSRFToken': csrf_token
+		},
 		data: JSON.stringify({
 			ids: $('#testcaseTemplateTable').bootstrapTable('getSelections').map(row => row.id)
 		}),
@@ -107,12 +111,16 @@ $("#campaignTemplateForm").submit(function(e){
 
 // Toggle visibility of testcase AJAX
 function visibleTest(event) {
+	var csrf_token = $('meta[name="csrf-token"]').attr('content');
 	event.stopPropagation();
 	row = $(event.target).closest("tr")
 	rowData = $('#assessmentTable').bootstrapTable('getData')[row.data("index")]
 	$.ajax({
 		url: `/testcase/${rowData.id}/toggle-visibility`,
-		type: 'GET',
+		type: 'POST',
+		headers: {
+			'X-CSRFToken': csrf_token
+		},
 		success: function(body) {
 			$('#assessmentTable').bootstrapTable('updateByUniqueId', {
 				id: body.id,
@@ -125,12 +133,16 @@ function visibleTest(event) {
 
 // Testcase clone AJAX POST and row update
 function cloneTest(event) {
+	var csrf_token = $('meta[name="csrf-token"]').attr('content');
 	event.stopPropagation();
 	row = $(event.target).closest("tr")
 	rowData = $('#assessmentTable').bootstrapTable('getData')[row.data("index")]
 	$.ajax({
 		url: `/testcase/${rowData.id}/clone`,
-		type: 'GET',
+		type: 'POST',
+		headers: {
+			'X-CSRFToken': csrf_token
+		},
 		success: function(body) {
 			$('#assessmentTable').bootstrapTable('insertRow', {
 				index: row.data("index") + 1,
@@ -152,9 +164,13 @@ function deleteTestcaseModal(event) {
 
 // AJAX DELETE testcase call and remove from table
 $('#deleteTestcaseButton').click(function() {
+	var csrf_token = $('meta[name="csrf-token"]').attr('content');
 	$.ajax({
 		url: `/testcase/${rowData.id}/delete`,
-		type: 'GET',
+		type: 'POST',
+		headers: {
+			'X-CSRFToken': csrf_token
+		},
 		success: function(result) {
 			$('#assessmentTable').bootstrapTable('removeByUniqueId', rowData.id)
 			$('#deleteTestcaseModal').modal('hide')
