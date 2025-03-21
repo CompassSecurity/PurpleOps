@@ -148,7 +148,7 @@ def importentire():
                       "alerted", "alertseverity", "logged", "detectionrating",
                       "priority", "priorityurgency", "expectedseverity", "visible", 
                       "outcome", "testcasescore", "alertseverityscore", "expectedincidentcreation", 
-                      "incidentcreated", "incidentseverity", "incidentseverityscore", "expectedalertcreation", "expectedprevention"]:
+                      "incidentcreated", "incidentseverity", "incidentseverityscore", "eventtoalert", "alerttoincident", "expectedalertcreation", "expectedprevention"]:
             newTestcase[field] = oldTestcase[field]
 
         for field in ["starttime", "endtime", "detecttime", "modifytime", "alerttime", "preventtime" ,"incidenttime" ]:
