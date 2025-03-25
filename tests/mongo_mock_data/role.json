@@ -1,0 +1,1 @@
+[{"_id":{"$oid":"67e10e8da6aeb9c974b64086"},"name":"Admin","description":""},{"_id":{"$oid":"67e10e8da6aeb9c974b64088"},"name":"Blue","description":""},{"_id":{"$oid":"67e10e8da6aeb9c974b64087"},"name":"Red","description":""},{"_id":{"$oid":"67e10e8da6aeb9c974b64089"},"name":"Spectator","description":""}]
