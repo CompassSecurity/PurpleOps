@@ -68,11 +68,17 @@ $('.multiTable').on('change', '.multi', function(event) {
 
 // When a source/target etc. is deleted, nuke the row from the table
 function deleteMultiRow(event) {
-	tableId = $(event.target).closest("table")[0].id
-	$(`#${tableId}`).bootstrapTable(
-		"removeByUniqueId",
-		$(event.target).closest("tr").data("uniqueid")
-	)
+    // Get the table ID
+    tableId = $(event.target).closest("table")[0].id;
+
+    // Get the uniqueId of the row
+    var uniqueId = $(event.target).closest("tr").data("uniqueid");
+
+    // Only remove the row if uniqueId starts with "tmp-"
+    if (uniqueId && uniqueId.startsWith("tmp-")) {
+        // Remove the row using bootstrapTable's removeByUniqueId method
+        $(`#${tableId}`).bootstrapTable("removeByUniqueId", uniqueId);
+    }
 }
 
 // Multi modal formatters

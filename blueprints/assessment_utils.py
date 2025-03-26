@@ -16,32 +16,37 @@ blueprint_assessment_utils = Blueprint('blueprint_assessment_utils', __name__)
 def assessmentmulti(id, field):
     if field not in ["sources", "targets", "tools", "controls", "tags", "preventionsources", "detectionsources"]:
         return '', 418
-    
+
     assessment = Assessment.objects(id=id).first()
+    if not assessment:
+        return jsonify({"error": "Assessment not found"}), 404
 
-    newObjs = []
+    existing_objs = {str(o.id): o for o in assessment[field]}  # Map existing objects by ID
+
     for row in request.json["data"]:
-        obj = {
-            "sources": Source(),
-            "targets": Target(),
-            "tools": Tool(),
-            "controls": Control(),
-            "tags": Tag(),
-            "preventionsources": Preventionsource(),
-            "detectionsources": Detectionsource(),
-        }[field]
+        if row["id"] in existing_objs:
+            obj = existing_objs[row["id"]]  # Update existing object
+        else:
+            obj = {
+                "sources": Source(),
+                "targets": Target(),
+                "tools": Tool(),
+                "controls": Control(),
+                "tags": Tag(),
+                "preventionsources": Preventionsource(),
+                "detectionsources": Detectionsource(),
+            }[field]  # Create new object if ID not found
 
-        # If pre-existing, then edit pre-existing to preserve ID
-        if row["id"] in [str(o.id) for o in assessment[field]]:
-            obj = assessment[field].filter(id=row["id"]).first()
         obj.name = row["name"]
         if field == "tags":
             obj.colour = row["colour"]
         else:
             obj.description = row["description"]
-        newObjs.append(obj)
-    assessment[field] = newObjs
-    assessment[field].save()
+
+        if row["id"] not in existing_objs:
+            assessment[field].append(obj)  # Append new object instead of replacing the list
+
+    assessment.save()
 
     return jsonify(assessment.multi_to_json(field)), 200
 
