@@ -183,9 +183,19 @@ $('input[name="incidentcreated"]').on('change', function() {
 $("#ttpform").submit(function(e) {
   e.preventDefault();
 
+  // Create FormData object from the form
+  let formData = new FormData(e.target);
+
+  ['sources', 'targets', 'tools', 'preventionsources', 'detectionsources', 'tags'].forEach(field => {
+    //check if formdata has all expected form fields. If not add it
+    if (!formData.has(field)) {
+      formData.append(field, ''); // Add empty fields explicitly
+    }
+  });
+
   fetch(e.target.action, {
     method: 'POST',
-    body: new FormData(e.target)
+    body: formData
   })
   .then(response => {
     if (response.status === 200) { // Use === for strict comparison
