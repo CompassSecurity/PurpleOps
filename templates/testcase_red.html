@@ -102,6 +102,12 @@
 					<textarea class="form-control" name="objective" id="objective"
 						style="min-height: 5.5em"{% if current_user.has_role("Blue") %} disabled{% endif %}>{{ testcase.objective }}</textarea>
 				</div>
+				<div class="input-group my-3 mt-0" id="red-requirements">
+					<span class="input-group-text px-1 text-danger"
+						style="writing-mode: vertical-lr">Requirements</span>
+					<textarea class="form-control" name="requirements" id="requirements"
+						style="min-height: 8.0em"{% if current_user.has_role("Blue") %} disabled{% endif %}>{{ testcase.requirements }}</textarea>
+				</div>
 				<div class="input-group my-3" id="red-actions">
 					<span class="input-group-text px-1 text-danger"
 						style="writing-mode: vertical-lr;">Actions</span>

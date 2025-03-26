@@ -30,7 +30,7 @@ class Source(db.EmbeddedDocument):
         return {
             "id": str(self.id),
             "name": esc(self.name, raw),
-            "description": esc(self.description, raw)
+            "description": esc(self.description, raw),
         }
 
 
@@ -43,7 +43,7 @@ class Target(db.EmbeddedDocument):
         return {
             "id": str(self.id),
             "name": esc(self.name, raw),
-            "description": esc(self.description, raw)
+            "description": esc(self.description, raw),
         }
 
 
@@ -56,7 +56,7 @@ class Tool(db.EmbeddedDocument):
         return {
             "id": str(self.id),
             "name": esc(self.name, raw),
-            "description": esc(self.description, raw)
+            "description": esc(self.description, raw),
         }
 
 
@@ -69,7 +69,7 @@ class Control(db.EmbeddedDocument):
         return {
             "id": str(self.id),
             "name": esc(self.name, raw),
-            "description": esc(self.description, raw)
+            "description": esc(self.description, raw),
         }
 
 
@@ -82,7 +82,7 @@ class Tag(db.EmbeddedDocument):
         return {
             "id": str(self.id),
             "name": esc(self.name, raw),
-            "colour": esc(self.colour, raw) # AU spelling is non-negotiable xx
+            "colour": esc(self.colour, raw), # AU spelling is non-negotiable xx
         }
 
 class Preventionsource(db.EmbeddedDocument):    
@@ -145,6 +145,7 @@ class TestCaseTemplate(db.Document):
     expectedalertcreation = db.BooleanField()
     expectedseverity = db.StringField(default="")
     priorityurgency = db.StringField(default="")
+    requirements = db.StringField(default="")
 
 class TestCase(db.Document):
     assessmentid = db.StringField()
@@ -194,6 +195,7 @@ class TestCase(db.Document):
     incidenttime = db.DateTimeField()
     eventtoalert = db.StringField(default="")
     alerttoincident = db.StringField(default="")
+    requirements = db.StringField(default="")
 
     def to_json(self, raw=False):
         jsonDict = {}
@@ -202,7 +204,7 @@ class TestCase(db.Document):
                       "alerted", "alertseverity", "logged", "detectionrating",
                       "priority", "priorityurgency", "expectedseverity", "expectedincidentcreation", 
                       "visible", "outcome", "testcasescore", "alertseverityscore", "incidentcreated", 
-                      "incidentseverity", "incidentseverityscore", "eventtoalert", "alerttoincident", "expectedprevention", "expectedalertcreation" ]:
+                      "incidentseverity", "incidentseverityscore", "eventtoalert", "alerttoincident", "expectedprevention", "expectedalertcreation","requirements" ]:
             jsonDict[field] = esc(self[field], raw)
         for field in ["id", "detecttime", "modifytime", "starttime", "endtime", "alerttime", "preventtime", "incidenttime"]:
             jsonDict[field] = str(self[field]).split(".")[0]

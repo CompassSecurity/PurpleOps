@@ -29,7 +29,9 @@ def testcasetemplates(id):
             expectedalertcreation = template.expectedalertcreation,
             priorityurgency = template.priorityurgency,
             expectedseverity = template.expectedseverity,
+            requirements = template.requirements,
             assessmentid = id
+
         ).save()
         newcases.append(newcase.to_json())
         
@@ -76,7 +78,7 @@ def testcasecampaign(id):
     for testcase in campaignTestcases:
         newcase = TestCase()
         newcase.assessmentid = id
-        for field in ["name", "mitreid", "tactic", "objective", "actions", "tools", "tags", "priorityurgency", "expectedseverity", "expectedincidentcreation", "expectedalertcreation", "expectedprevention"]:
+        for field in ["name", "mitreid", "tactic", "objective", "actions", "tools", "tags", "priorityurgency", "expectedseverity", "expectedincidentcreation", "expectedalertcreation", "expectedprevention", "requirements"]:
             if field in testcase:
                 if field not in ["tools", "tags"]:
                     newcase[field] = testcase[field]
@@ -148,7 +150,8 @@ def importentire():
                       "alerted", "alertseverity", "logged", "detectionrating",
                       "priority", "priorityurgency", "expectedseverity", "visible", 
                       "outcome", "testcasescore", "alertseverityscore", "expectedincidentcreation", 
-                      "incidentcreated", "incidentseverity", "incidentseverityscore", "eventtoalert", "alerttoincident", "expectedalertcreation", "expectedprevention"]:
+                      "incidentcreated", "incidentseverity", "incidentseverityscore", "eventtoalert", 
+                      "alerttoincident", "expectedalertcreation", "expectedprevention", "requirements"]:
             newTestcase[field] = oldTestcase[field]
 
         for field in ["starttime", "endtime", "detecttime", "modifytime", "alerttime", "preventtime" ,"incidenttime" ]:
