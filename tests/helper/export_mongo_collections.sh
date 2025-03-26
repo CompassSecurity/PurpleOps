@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DB_NAME="assessments3"
-DUMP_DIR="../mongo_mock_data"
+DUMP_DIR="./tests/mongo_mock_data"
 
 # Get all collections
 collections=("assessment" "knowlege_base" "role" "sigma" "tactic" "technique" "test_case" "test_case_template" "testcase_knowlege_base" "user")
