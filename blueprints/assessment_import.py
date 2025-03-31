@@ -152,7 +152,8 @@ def importentire():
                       "outcome", "testcasescore", "alertseverityscore", "expectedincidentcreation", 
                       "incidentcreated", "incidentseverity", "incidentseverityscore", "eventtoalert", 
                       "alerttoincident", "expectedalertcreation", "expectedprevention", "requirements"]:
-            newTestcase[field] = oldTestcase[field]
+            if field in oldTestcase:
+                newTestcase[field] = oldTestcase[field]
 
         for field in ["starttime", "endtime", "detecttime", "modifytime", "alerttime", "preventtime" ,"incidenttime" ]:
             if oldTestcase[field] != "None":
