@@ -193,6 +193,13 @@ $("#ttpform").submit(function(e) {
     }
   });
 
+  // Convert relevant dates to UTC
+  convertLocalToUtc("#time-start", formData, 'starttime');
+  convertLocalToUtc("#time-end", formData, 'endtime');
+  convertLocalToUtc("#time-alerttime", formData, 'alerttime');
+  convertLocalToUtc("#time-preventtime", formData, 'preventtime');
+  convertLocalToUtc("#time-incidenttime", formData, 'incidenttime');
+
   fetch(e.target.action, {
     method: 'POST',
     body: formData
@@ -222,41 +229,20 @@ $("#ttpform").submit(function(e) {
   });
 });
 
-// Convert UTC DB time to local time
-$( document ).ready(function() {
-	offset = new Date().getTimezoneOffset()
-    $("#timezone").val(offset)
 
-	if ($("#time-start").val()) {
-		startTime = new Date($("#time-start").val());
-		startTime.setMinutes(startTime.getMinutes() - offset * 2);
-		$("#time-start").val(startTime.toISOString().slice(0,16))
-	}
+// functions and calls to change DB UTC to local time, respecting DST
+$(document).ready(function() {
+  const fieldsToConvert = [
+    "#time-start",
+    "#time-end",
+    "#time-alerttime",
+    "#time-preventtime",
+    "#time-incidenttime"
+  ];
 
-	if ($("#time-end").val()) {
-		endTime = new Date($("#time-end").val());
-		endTime.setMinutes(endTime.getMinutes() - offset * 2);
-		$("#time-end").val(endTime.toISOString().slice(0,16))
-	}
-
-	if ($("#time-alerttime").val()) {
-		endTime = new Date($("#time-alerttime").val());
-		endTime.setMinutes(endTime.getMinutes() - offset * 2);
-		$("#time-alerttime").val(endTime.toISOString().slice(0,16))
-	}
-
-	if ($("#time-preventtime").val()) {
-		endTime = new Date($("#time-preventtime").val());
-		endTime.setMinutes(endTime.getMinutes() - offset * 2);
-		$("#time-preventtime").val(endTime.toISOString().slice(0,16))
-	}
-
-	if ($("#time-incidenttime").val()) {
-		endTime = new Date($("#time-incidenttime").val());
-		endTime.setMinutes(endTime.getMinutes() - offset * 2);
-		$("#time-incidenttime").val(endTime.toISOString().slice(0,16))
-	}	
-
+  fieldsToConvert.forEach(selector => {
+    displayUtcAsLocal(selector);
+  });
 });
 
 // Alter timestamps, button labels and state when hitting run button
@@ -415,3 +401,87 @@ function toggleVariablesinCodeBlocks() {
 }
 //execute the function. Not sure where to put it else.
 toggleVariablesinCodeBlocks()
+
+// Function to convert local time to UTC respecting DST for past and future dates
+function convertLocalToUtc(inputId, formData, fieldName) {
+	const elementId = inputId.startsWith('#') ? inputId.slice(1) : inputId;
+	const localTimeInput = document.getElementById(elementId);
+
+  // Validate that the element exists
+	if (!localTimeInput) {
+    return false; // Indicate failure: element not found
+  }
+
+  const localValue = localTimeInput.value;
+
+  // Handle empty input value
+  if (!localValue) {
+  	return true;
+  }
+
+  // Create Date object from the input value (JS interprets this as local time)
+  const localDate = new Date(localValue);
+
+  // Validate the created Date object
+  //    isNaN(date.getTime()) is the standard way to check for an "Invalid Date"
+  if (isNaN(localDate.getTime())) {
+  	// console.error(`[convertLocalToUtc] Invalid date value "${localValue}" in input ${inputId}. Cannot convert.`);
+    return false; // Indicate failure: invalid date
+   }
+
+  // Convert directly to UTC ISO string
+  //    .toISOString() correctly handles the conversion from the local time
+  //    represented by 'localDate' to its UTC equivalent string.
+  //    Format: "YYYY-MM-DDTHH:mm:ss.sssZ"
+  const utcIsoString = localDate.toISOString();
+
+  // Slice to get the desired 'YYYY-MM-DDTHH:mm' format
+  const utcFormattedString = utcIsoString.slice(0, 16);
+  formData.set(fieldName, utcFormattedString);
+   
+  // console.log(`[convertLocalToUtc] Converted ${inputId} (value: "${localValue}") to UTC: ${utcFormattedString} for field "${fieldName}"`);
+
+  return true;
+}
+
+// Pads a number with a leading zero if it's less than 10.
+function pad(num) {
+    return num < 10 ? '0' + num : num.toString();
+  }
+
+//Reads a UTC date/time string from an input field, converts it to the local time
+function displayUtcAsLocal(inputSelector) {
+	const inputElement = $(inputSelector);
+	if (!inputElement.length) {
+		console.warn(`[displayUtcAsLocal] Element not found for selector: ${inputSelector}`);
+        return; // Exit if element doesn't exist
+      }
+
+      const utcValue = inputElement.val();
+
+    // Only proceed if there is a value in the input
+      if (utcValue) {
+      // Ensure the Date constructor treats the string as UTC.
+      // Append 'Z' if it's not already there. Handles ISO formats.
+      	const utcDateString = utcValue.endsWith('Z') ? utcValue : utcValue + 'Z';
+      	const dateObj = new Date(utcDateString);
+
+      // Check if the date parsed correctly
+      	if (!isNaN(dateObj.getTime())) {
+        	// Get components in LOCAL time directly from the Date object
+      		const year = dateObj.getFullYear();
+        	const month = pad(dateObj.getMonth() + 1); // getMonth() is 0-indexed
+        	const day = pad(dateObj.getDate());
+        	const hours = pad(dateObj.getHours());
+        	const minutes = pad(dateObj.getMinutes());
+
+        	// Format for datetime-local input (YYYY-MM-DDTHH:mm)
+        	const localDateTimeString = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+        	// Update the input field value with the local time string
+        	inputElement.val(localDateTimeString);
+        	// console.log(`[displayUtcAsLocal] Updated ${inputSelector}: UTC "${utcValue}" -> Local "${localDateTimeString}"`);
+
+      } 
+    } 
+  }

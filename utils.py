@@ -25,8 +25,8 @@ def applyFormTimeData (obj, form, fields):
     for field in fields:
         if field in form: # and form[field]:
             if form[field] and form[field] != "None":
-                localTime = datetime.strptime(form[field], "%Y-%m-%dT%H:%M")
-                utcTime = localTime + timedelta(minutes=int(form["timezone"]))
+                utcTime = datetime.strptime(form[field], "%Y-%m-%dT%H:%M")
+                # utcTime = localTime + timedelta(minutes=int(form["timezone"]))
                 obj[field] = utcTime
             else:
                 obj[field] = None
