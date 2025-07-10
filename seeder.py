@@ -158,7 +158,8 @@ def parseCustomTestcases ():
             expectedprevention = yml["expectedprevention"],
             expectedalertcreation = yml["expectedalertcreation"],
             priorityurgency = yml["priorityurgency"],
-            expectedseverity = yml["expectedseverity"]
+            expectedseverity = yml["expectedseverity"],
+            requirements = yml["requirements"]
         ).save()
 
 def parseCustomKBs ():
@@ -274,3 +275,8 @@ if Tactic.objects.count() == 0:
 
     print("Preparing roles and initial admin")
     prepareRolesAndAdmin()
+
+else:
+
+    print("update testcasekb")
+    parseCustomTestcaseKBs()

@@ -98,7 +98,7 @@
 		<div class="col">
 				<div class="input-group my-3 mt-0" id="red-objective">
 					<span class="input-group-text px-1 text-danger"
-						style="writing-mode: vertical-lr">Objective</span>
+						style="writing-mode: vertical-lr">Rational</span>
 					<textarea class="form-control" name="objective" id="objective"
 						style="min-height: 5.5em"{% if current_user.has_role("Blue") %} disabled{% endif %}>{{ testcase.objective }}</textarea>
 				</div>
@@ -106,7 +106,7 @@
 					<span class="input-group-text px-1 text-danger"
 						style="writing-mode: vertical-lr">Requirements</span>
 					<textarea class="form-control" name="requirements" id="requirements"
-						style="min-height: 8.0em"{% if current_user.has_role("Blue") %} disabled{% endif %}>{{ testcase.requirements }}</textarea>
+						style="min-height: 9.0em"{% if current_user.has_role("Blue") %} disabled{% endif %}>{{ testcase.requirements }}</textarea>
 				</div>
 				<div class="input-group my-3" id="red-actions">
 					<span class="input-group-text px-1 text-danger"
