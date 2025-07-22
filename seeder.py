@@ -15,6 +15,7 @@ from flask import Flask
 from openpyxl import load_workbook
 import markdown
 import bleach
+import mongoengine as me
 
 dotenvFile = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenvFile)
@@ -23,7 +24,7 @@ PWD = os.getcwd()
 
 app = Flask(__name__)
 app.config.from_pyfile("flask.cfg")
-db.init_app(app)
+me.connect(**app.config["MONGODB_SETTINGS"])
 
 if not os.path.exists(f"{PWD}/external/"):
     os.makedirs(f"{PWD}/external")

@@ -348,7 +348,13 @@ function copyCodeBlocks() {
 
         // Add click event listener to the button
         copyButton.addEventListener('click', () => {
-            const text = codeBlock.textContent;
+            let text = codeBlock.textContent;
+            
+            // Remove last line break if present
+            if (text.endsWith('\n')) {
+                text = text.slice(0, -1);
+            }
+
             navigator.clipboard.writeText(text)
                 .then(() => {
                     showToast('Code Copied')

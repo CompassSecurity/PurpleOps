@@ -56,8 +56,7 @@ def assessmentmulti(id, field):
 def assessmentnavigator(id):
     assessment = Assessment.objects(id=id).first()
 
-    # Create and store one-time secret; timestamp and ip for later comparison in
-    # the unauthed `thisurl`.json endpoint
+    # Create and store one-time secret; timestamp and ip for later comparison in the unauthed navigator.json endpoint
     secret = secrets.token_urlsafe()
     assessment.navigatorexport = f"{int(time())}|{request.remote_addr}|{secret}"
     assessment.save()
@@ -69,22 +68,33 @@ def assessmentnavigator(id):
 @blueprint_assessment_utils.route('/assessment/<id>/navigator.json', methods = ['GET'])
 def assessmentnavigatorjson(id):
     assessment = Assessment.objects(id=id).first()
-    timestamp, ip, secret = assessment.navigatorexport.split("|")
-    
-    # This endpoint is unauthed so that we can embed the ATT&CK Navigator and
-    # allow it to fetch a layer.json on behalf of the user. To mitigate security issues
-    # the endpoint needs to be hit
-    # 1. Within 10 seconds of hitting the authed endpoint /assessment/<id>/navigator
-    # 2. With the same IP used to his the above authed endpoint
-    # 3. With a one-time secret key returned in the above authed endpoint
-    # 4. From the mitre-attack origin (yes this is spoofable, but why not)
-    # if (int(time()) - int(timestamp) <= 30 and
-        #request.remote_addr == ip and
-        # request.args.get("secret") == secret): # and
-        #request.origin == "https://mitre-attack.github.io"):
-    response = make_response(send_from_directory('files', f"{id}/navigator.json"))
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    if not assessment or not assessment.navigatorexport:
+        return "", 401
+
+    try:
+        timestamp, ip, secret = assessment.navigatorexport.split("|")
+    except ValueError:
+        return "", 401
+
+    request_ip = request.remote_addr
+    request_secret = request.args.get("secret", type=str)
+    request_origin = request.headers.get("Origin")
+
+    # Validate conditions
+    if (
+        int(time()) - int(timestamp) <= 10 and
+        request_ip == ip and
+        request_secret == secret and
+        request_origin == "https://mitre-attack.github.io"
+    ):
+        response = make_response(send_from_directory('files', f"{id}/navigator.json"))
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        
+        # Clear the one-time secret to prevent reuse
+        assessment.navigatorexport = None
+        assessment.save()
+
+        return response
 
     return "", 401
 
@@ -94,9 +104,9 @@ def assessmentnavigatorjson(id):
 def assessmentstats(id):
     assessment = Assessment.objects(id=id).first()
     if current_user.has_role("Blue"):
-        testcases = TestCase.objects(assessmentid=str(assessment.id), visible=True).all()
+        testcases = TestCase.objects(assessmentid=str(assessment.id), visible=True, deleted=False).all()
     else:
-        testcases = TestCase.objects(assessmentid=str(assessment.id)).all()
+        testcases = TestCase.objects(assessmentid=str(assessment.id), deleted=False).all()
 
     # Initalise metrics that are captured
     stats = {
@@ -169,7 +179,7 @@ def assessmenthexagons(id):
     shownHexs = []
     hiddenHexs = []
     for i in range(len(tactics)):
-        if not TestCase.objects(assessmentid=id, tactic=tactics[i], state="Complete").count():
+        if not TestCase.objects(assessmentid=id, tactic=tactics[i], state="Complete", deleted=False).count():
             hiddenHexs.append({
                 "display": "none",
                 "stroke": "#ffffff",
@@ -182,7 +192,7 @@ def assessmenthexagons(id):
         cumulatedscore = 0
         count = 0
 
-        for testcase in TestCase.objects(assessmentid=id, tactic=tactics[i]):
+        for testcase in TestCase.objects(assessmentid=id, tactic=tactics[i], deleted=False):
             if testcase.testcasescore is not None:
                 cumulatedscore += testcase.testcasescore
                 count += 1

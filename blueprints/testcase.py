@@ -25,6 +25,10 @@ def newtestcase(id):
 def runtestcasepost(id):
     testcase = TestCase.objects(id=id).first()
     assessment = Assessment.objects(id=testcase.assessmentid).first()
+    history_entries = TestCaseHistory.objects(testcaseid=id).order_by('-timestamp')
+
+    if testcase.deleted:
+        return ("", 403)
 
     if not testcase.visible and current_user.has_role("Blue"):
         return ("", 403)
@@ -36,6 +40,7 @@ def runtestcasepost(id):
         assessment = assessment,
         kb = KnowlegeBase.objects(mitreid=testcase.mitreid).first(),
         testcasekb = TestcaseKnowlegeBase.objects(mitreid=testcase.mitreid).first(),
+        history_entries=history_entries,
         templates = TestCaseTemplate.objects(mitreid=testcase["mitreid"]),
         mitres = [[m["mitreid"], m["name"]] for m in Technique.objects()],
         sigmas = Sigma.objects(mitreid=testcase["mitreid"]),
@@ -93,6 +98,9 @@ def calculate_severity_score(severity, expected_severity):
 def testcasesave(id):
     testcase = TestCase.objects(id=id).first()
     isBlue = current_user.has_role("Blue")
+
+    if testcase.deleted:
+        return ("", 403)
 
     if not testcase.visible and isBlue:
         return ("", 403)
@@ -223,5 +231,60 @@ def testcasesave(id):
         testcase[field] = valid_ids
     testcase.save()
 
+    # Save SnapShot to test_case_history collection
+    latest_version = TestCaseHistory.objects(testcaseid=testcase.id).count()
+    TestCaseHistory(
+        testcaseid=testcase.id,
+        testcase_name=testcase.name,
+        snapshot=testcase.to_mongo().to_dict(),
+        version=latest_version + 1,
+        modified_by = f"{current_user.username} ({current_user.id})"
+    ).save()
 
     return (str(mongomodifytime), 200)
+
+@blueprint_testcase.route('/testcase/<id>/history/<int:version>', methods=['GET'])
+@auth_required()
+@user_assigned_assessment
+def view_testcase_history_version(id, version):
+    # Check if testcase is delted
+    testcase = TestCase.objects(id=id).first()
+    if testcase.deleted:
+        return("", 404)
+
+    # Get the historical version
+    history = TestCaseHistory.objects(testcaseid=id, version=version).first()
+    if not history:
+        return("", 404)
+    snapshot_data = history.snapshot
+
+    # Convert snapshot into a mock TestCase-like object
+    testcase = TestCase._from_son(snapshot_data)
+    
+    # Get related data
+    assessment = Assessment.objects(id=testcase.assessmentid).first()
+
+    return render_template('testcase.html',
+        testcase=testcase,
+        testcases=TestCase.objects(assessmentid=str(assessment.id)).all(),
+        tactics=Tactic.objects().all(),
+        assessment=assessment,
+        kb=KnowlegeBase.objects(mitreid=testcase.mitreid).first(),
+        testcasekb=TestcaseKnowlegeBase.objects(mitreid=testcase.mitreid).first(),
+        templates=TestCaseTemplate.objects(mitreid=testcase.mitreid),
+        mitres=[[m["mitreid"], m["name"]] for m in Technique.objects()],
+        sigmas=Sigma.objects(mitreid=testcase.mitreid),
+        multi={
+            "sources": assessment.sources,
+            "targets": assessment.targets,
+            "tools": assessment.tools,
+            "controls": assessment.controls,
+            "tags": assessment.tags,
+            "preventionsources": assessment.preventionsources,
+            "detectionsources": assessment.detectionsources
+        },
+        history_read_only=True,
+        history_version = history.version,
+        history_modified_by = history.modified_by,
+        history_timestamp = history.timestamp
+    )

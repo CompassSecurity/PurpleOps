@@ -8,6 +8,8 @@ from flask_wtf.csrf import CSRFProtect
 
 from blueprints import access, assessment, assessment_utils, assessment_import, assessment_export, testcase, testcase_utils
 
+import mongoengine as me
+
 
 load_dotenv()
 
@@ -23,7 +25,7 @@ app.register_blueprint(assessment_export.blueprint_assessment_export)
 app.register_blueprint(testcase.blueprint_testcase)
 app.register_blueprint(testcase_utils.blueprint_testcase_utils)
 
-db.init_app(app)
+me.connect(**app.config["MONGODB_SETTINGS"])
 
 security = Security(app, user_datastore)
 csrf = CSRFProtect(app)

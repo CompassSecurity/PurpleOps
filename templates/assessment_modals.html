@@ -110,3 +110,34 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     {{ macros.modalTail(name="variables", cancelLabel="Close", actionLabel="Import") }}
 </form>
+
+<!-- Deleted Testcase Modal-->
+{{ macros.modalHead(name="deletedtestcases", title="Deleted Test Cases", xl=True) }}
+
+{% if deleted_testcases %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in deleted_testcases %}
+        <tr>
+            <td>{{ entry.name }}</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-outline-primary restore-btn" data-id="{{ entry.id }}">
+                    Restore
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No deleted test cases.</p>
+{% endif %}
+
+{{ macros.modalTail(name="deletedtestcases", cancelLabel="Close") }}
+

@@ -17,13 +17,13 @@ blueprint_assessment_export = Blueprint('blueprint_assessment_export', __name__)
 @user_assigned_assessment
 def exportassessment(id, filetype):
     if filetype not in ["json", 'csv']:
-        return 401
+        return "", 401
     
     assessment = Assessment.objects(id=id).first()
     if current_user.has_role("Blue"):
-        testcases = TestCase.objects(assessmentid=str(assessment.id), visible=True).all()
+        testcases = TestCase.objects(assessmentid=str(assessment.id), visible=True, deleted=False).all()
     else:
-        testcases = TestCase.objects(assessmentid=str(assessment.id)).all()
+        testcases = TestCase.objects(assessmentid=str(assessment.id), deleted=False).all()
     
     jsonDict = []
     for testcase in testcases:
@@ -57,9 +57,9 @@ def exportassessment(id, filetype):
 def exportcampaign(id):
     assessment = Assessment.objects(id=id).first()
     if current_user.has_role("Blue"):
-        testcases = TestCase.objects(assessmentid=str(assessment.id), visible=True).all()
+        testcases = TestCase.objects(assessmentid=str(assessment.id), visible=True, deleted=False).all()
     else:
-        testcases = TestCase.objects(assessmentid=str(assessment.id)).all()
+        testcases = TestCase.objects(assessmentid=str(assessment.id), deleted=False).all()
     
     jsonDict = []
     for testcase in testcases:
@@ -156,9 +156,9 @@ def exportnavigator(id):
     }
 
     if current_user.has_role("Blue"):
-        testcases = TestCase.objects(assessmentid=id, visible=True).all()
+        testcases = TestCase.objects(assessmentid=id, visible=True, deleted=False).all()
     else:
-        testcases = TestCase.objects(assessmentid=id).all()
+        testcases = TestCase.objects(assessmentid=id, deleted=False).all()
 
     results = {}
     for testcase in testcases:
@@ -214,7 +214,7 @@ def exportentire(id):
     else:
         # If they're blue then they can only export the evidence files of visible testcases
         shutil.copytree(f"files/{id}", f"files/tmp{id}")
-        testcases = TestCase.objects(assessmentid=str(assessment.id)).all()
+        testcases = TestCase.objects(assessmentid=str(assessment.id), deleted=False).all()
         for testcase in testcases:
             if not testcase.visible and os.path.isdir(f"files/tmp{id}/{str(testcase.id)}"):
                 shutil.rmtree(f"files/tmp{id}/{str(testcase.id)}")

@@ -34,9 +34,20 @@ def testcaseclone(id):
 
     return jsonify(newcase.to_json()), 200
 
-@blueprint_testcase_utils.route('/testcase/<id>/delete', methods = ['POST'])
+@blueprint_testcase_utils.route('/testcase/<id>/toggle-delete', methods = ['POST'])
 @auth_required()
 @roles_accepted('Admin', 'Red')
+@user_assigned_assessment
+def testcasedeleted(id):
+    newcase = TestCase.objects(id=id).first()
+    newcase.deleted = not newcase.deleted
+    newcase.save()
+        
+    return "", 200
+
+@blueprint_testcase_utils.route('/testcase/<id>/delete', methods = ['POST'])
+@auth_required()
+@roles_accepted('Admin')
 @user_assigned_assessment
 def testcasedelete(id):
     testcase = TestCase.objects(id=id).first()

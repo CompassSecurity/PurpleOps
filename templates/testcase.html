@@ -9,11 +9,22 @@
 
 {% block content %}
 {% include 'testcase_modals.html' %}
+{% if history_read_only %}
+<div class="alert alert-warning">
+  <strong>Viewing Read-Only Historical Version. Files are not versioned.</strong><br>
+  <strong>Version:</strong> {{ history_version }}<br>
+  <strong>Modified by:</strong> {{ history_modified_by }}<br>
+  <strong>Timestamp (UTC):</strong> {{ history_timestamp }}<br>
+</div>
+{% endif %}
 <div id="assessmentid" class="d-none"> {{ assessment.id }}</div>
 <form action="/testcase/{{ testcase.id }}" method="Post" id="ttpform" value="{{ testcase.id }}" style="max-width: 1600px; margin: 0 auto" enctype="multipart/form-data">
+    {% if history_read_only %}
+    <fieldset disabled>
+    {% endif %}
     <div class="container-fluid">
         <div class="row mt-3" style="margin: 0 -1px 0 -2px">
-            <div class="col-7">
+            <div class="col-6">
                 <div class="input-group">
                     <span class="input-group-text">TTP</span>
                     <select class="selectpicker form-control flex-grow-0" data-live-search="true" data-size="10" name="mitreid" id="mitreid" required value="{{ testcase.mitreid }}" data-width="7em"{% if current_user.has_role("Blue") %} disabled{% endif %}>
@@ -23,15 +34,15 @@
                     </select>
                     <input type="text" name="name" id="name" class="form-control" value="{{ testcase.name }}" required{% if current_user.has_role("Blue") %} disabled{% endif %}>
                     <input type="hidden" name="modifytime" id="modifytime" class="form-control" value="{{ testcase.modifytime }}">
-                    <button class="btn btn-secondary" type="button" title="Info" data-bs-toggle="modal" data-bs-target="#ttpInfoModal">
+                    <button class="btn btn-secondary" type="button" title="TTP Info" data-bs-toggle="modal" data-bs-target="#ttpInfoModal">
                         <i class="bi-info-square-fill">&zwnj;</i>
                     </button>
-                    <button class="btn btn-secondary" type="button" title="Info" data-bs-toggle="modal" data-bs-target="#testcaseKBModal">
+                    <button class="btn btn-secondary" type="button" title="Compass KB" data-bs-toggle="modal" data-bs-target="#testcaseKBModal">
                         <i class="bi bi-compass-fill">&zwnj;</i>
                     </button>
                 </div>
             </div>
-            <div class="col-2">
+            <div class="col-3">
                 <div class="input-group mb-3">
                     <span class="input-group-text">Tactic</span>
                     <select id="tactic" name="tactic" class="form-select"{% if current_user.has_role("Blue") %} disabled{% endif %}>
@@ -57,18 +68,25 @@
                     </select>
                 </div>
             </div>
-            {% if not current_user.has_role("Spectator") %}
+             
             <div class="col-1">
-                <div class="btn-group w-100" role="group">
+                <div class="d-flex align-items-start gap-2">
+                    <!-- History Button -->
+                    <button class="btn btn-secondary" type="button" title="History" data-bs-toggle="modal" data-bs-target="#testcaseHistoryModal">
+                        <i class="bi bi-clock-history">&zwnj;</i>
+                    </button>
+                    {% if not current_user.has_role("Spectator") %}
+                    <!-- Return Without Saving -->
                     <a class="btn btn-outline-danger" href="/assessment/{{ assessment.id }}" role="button" title="Return Without Saving">
-                        <i class="bi-arrow-return-left">&zwnj;</i>
+                        <i class="bi bi-arrow-return-left">&zwnj;</i>
                     </a>
-                    <button id="save" name="save" class="btn btn-success ms-2" type="submit" title="Save">
+                    <!-- Save Button -->
+                    <button id="save" name="save" class="btn btn-success" type="submit" title="Save">
                         <i class="bi-check-square-fill">&zwnj;</i>
                     </button>
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
         </div>
         <hr class="m-0" />
         <div class="row">
@@ -79,6 +97,9 @@
         </div>
     </div>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+{% if history_read_only %}
+</fieldset disabled>
+{% endif %}
 </form>
 <script src="/static/scripts/testcase.js"></script> 
 

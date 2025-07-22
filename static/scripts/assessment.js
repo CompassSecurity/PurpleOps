@@ -157,7 +157,7 @@ function deleteTestcaseModal(event) {
 	// Globally store the clicked row for AJAX operations
 	row = $(event.target).closest("tr")
 	rowData = $('#assessmentTable').bootstrapTable('getData')[row.data("index")]
-	$('#deleteTestcaseForm').attr('action', `/testcase/${rowData.id}/delete`) 
+	$('#deleteTestcaseForm').attr('action', `/testcase/${rowData.id}/toggle-delete`) 
 	$('#deleteTestcaseWarning').text(`Really Delete ${rowData.name}?`)
 	$('#deleteTestcaseModal').modal('show')
 }
@@ -166,7 +166,7 @@ function deleteTestcaseModal(event) {
 $('#deleteTestcaseButton').click(function() {
 	var csrf_token = $('meta[name="csrf-token"]').attr('content');
 	$.ajax({
-		url: `/testcase/${rowData.id}/delete`,
+		url: `/testcase/${rowData.id}/toggle-delete`,
 		type: 'POST',
 		headers: {
 			'X-CSRFToken': csrf_token
@@ -178,6 +178,35 @@ $('#deleteTestcaseButton').click(function() {
 		}
 	});
 });
+
+// AJAX RESTORE testcase call
+$(document).on('click', '.restore-btn', function() {
+	let button = $(this);
+	let testCaseId = button.data('id');
+	let csrf_token = $('meta[name="csrf-token"]').attr('content');
+
+	$.ajax({
+		url: `/testcase/${testCaseId}/toggle-delete`,
+		type: 'POST',
+		headers: {
+			'X-CSRFToken': csrf_token
+		},
+		success: function(response) {
+			// Remove the row from the modal table
+			button.closest('tr').fadeOut(function() {
+				$(this).remove();
+
+				// Optionally show a toast or notification
+				showToast('Testcase Restored');
+			});
+		},
+		error: function(xhr) {
+			console.error(xhr.responseText);
+			showToast('Failed to restore testcase', 'error');
+		}
+	});
+});
+
 
 // Table formatters
 function nameFormatter(name, row) {

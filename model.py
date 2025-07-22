@@ -1,11 +1,12 @@
 import datetime
 import uuid
 from bson.objectid import ObjectId
-from flask import escape
-from flask_mongoengine import MongoEngine
+from markupsafe import escape
+import mongoengine as me
 from flask_security import UserMixin, RoleMixin, MongoEngineUserDatastore
 
-db = MongoEngine()
+#Alias to keep with old style that uses flask-mongoengine
+db = me
 
 class Tactic(db.Document):
     mitreid = db.StringField()
@@ -185,6 +186,7 @@ class TestCase(db.Document):
     redfiles = db.EmbeddedDocumentListField(File)
     bluefiles = db.EmbeddedDocumentListField(File)
     visible = db.BooleanField(default=False)
+    deleted = db.BooleanField(default=False)
     modifytime = db.DateTimeField(default=datetime.datetime.utcnow)
     outcome = db.StringField(default="")
     testcasescore = db.IntField()
@@ -228,6 +230,14 @@ class TestCase(db.Document):
                 strs.append([f"{j.name}|{j.colour}" for j in assessment[field] if str(j.id) == i][0])
         return strs
 
+class TestCaseHistory(db.Document):
+    testcaseid = db.ObjectIdField(required=True)
+    testcase_name = db.StringField()
+    snapshot = db.DictField(required=True)
+    timestamp = db.DateTimeField(default=datetime.datetime.utcnow)
+    modified_by = db.StringField()
+    version = db.IntField()
+
 class Assessment(db.Document):
     name = db.StringField()
     description = db.StringField(default="")
@@ -243,14 +253,14 @@ class Assessment(db.Document):
 
     def get_progress(self):
         # Returns string with % of "missed|logged|alerted|prevented|pending"
-        testcases = TestCase.objects(assessmentid=str(self.id)).count()
+        testcases = TestCase.objects(assessmentid=str(self.id), deleted=False).count()
         if testcases == 0:
             return "0|0|0|0|0"
         
         scores = []
         for score in ["100", "75","50","25","0"]:
             scores.append(str(round(
-                TestCase.objects(assessmentid=str(self.id), state=str("Complete"), testcasescore=score).count() /
+                TestCase.objects(assessmentid=str(self.id), state=str("Complete"), deleted=False, testcasescore=score).count() /
                 testcases * 100
                 )))      
         return "|".join(scores)
