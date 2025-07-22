@@ -6,6 +6,9 @@ import purpleops
 import re
 import random
 import string
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def generate_random_string():
     characters = string.ascii_letters + string.digits + '._-'
@@ -31,6 +34,10 @@ def authenticated_admin_client(client):
     """
     Logs in and returns a client with an active admin session.
     """
+
+    admin_password = os.getenv("POPS_ADMIN_PWD")
+    assert admin_password, "POPS_ADMIN_PWD not set in environment"
+
     # Get CSRF token
     response = client.get("/login")
     assert response.status_code == 200
@@ -45,7 +52,7 @@ def authenticated_admin_client(client):
     login_data = {
         "next": "%2F",
         "email": "admin@purpleops.com",
-        "password": "a9255b5f-8e9e-40c0-9815-234bf38da6d9",
+        "password": admin_password,
         "submit": "login",
         "csrf_token": csrf_token
     }
