@@ -23,8 +23,8 @@
     <fieldset disabled>
     {% endif %}
     <div class="container-fluid">
-        <div class="row mt-3" style="margin: 0 -1px 0 -2px">
-            <div class="col-6">
+        <div class="row mt-3 gx-2 gy-2">
+            <div class="col-12 col-md-6 col-lg-6">
                 <div class="input-group">
                     <span class="input-group-text">TTP</span>
                     <select class="selectpicker form-control flex-grow-0" data-live-search="true" data-size="10" name="mitreid" id="mitreid" required value="{{ testcase.mitreid }}" data-width="7em"{% if current_user.has_role("Blue") %} disabled{% endif %}>
@@ -42,7 +42,7 @@
                     </button>
                 </div>
             </div>
-            <div class="col-3">
+             <div class="col-12 col-md-2 col-lg-2">
                 <div class="input-group mb-3">
                     <span class="input-group-text">Tactic</span>
                     <select id="tactic" name="tactic" class="form-select"{% if current_user.has_role("Blue") %} disabled{% endif %}>
@@ -54,7 +54,7 @@
                     </select>
                 </div>
             </div>
-            <div class="col-2">
+            <div class="col-12 col-md-2 col-lg-2">
                 <div class="input-group mb-3">
                     <span class="input-group-text">Status</span>
                     <select id="state" name="state" class="form-select {% if testcase.state=="Ready" %} bg-secondary{% endif %}{% if testcase.state=="Running" %} bg-warning{% endif %}{% if testcase.state=="Waiting Blue" %} bg-info{% endif %}{% if testcase.state=="Waiting Red" %} bg-danger{% endif %} {% if testcase.state=="Complete" or testcase.state=="Aborted"%} bg-primary{% endif %}"{% if current_user.has_role("Spectator") %} disabled{% endif %}>
@@ -64,24 +64,20 @@
                         <option value="Waiting Blue" {% if testcase.state=="Waiting Blue" %} selected{% endif %}>Waiting Blue</option>
                         <option value="Waiting Red" {% if testcase.state=="Waiting Red" %} selected {% endif %}  >Waiting Red</option>
                         <option value="Complete" {% if testcase.state=="Complete" %} selected {% endif %}  {% if current_user.has_role("Blue") %} disabled{% endif %}>Complete</option>
-                        <option value="Aborted" {% if testcase.state=="Aborted" %} selected{% endif %}  {% if current_user.has_role("Blue") %} disabled{% endif %}>Aborted</option>
+                        <option value="Aborted" {% if testcase.state=="Aborted" %} selected {% endif %}  {% if current_user.has_role("Blue") %} disabled{% endif %}>Aborted</option>
                     </select>
                 </div>
             </div>
-             
-            <div class="col-1">
-                <div class="d-flex align-items-start gap-2">
-                    <!-- History Button -->
+            <div class="col-12 col-md-2 col-lg-2 d-flex justify-content-start justify-content-md-end align-items-start">
+                <div class="d-flex flex-wrap gap-2">
                     <button class="btn btn-secondary" type="button" title="History" data-bs-toggle="modal" data-bs-target="#testcaseHistoryModal">
                         <i class="bi bi-clock-history">&zwnj;</i>
                     </button>
                     {% if not current_user.has_role("Spectator") %}
-                    <!-- Return Without Saving -->
                     <a class="btn btn-outline-danger" href="/assessment/{{ assessment.id }}" role="button" title="Return Without Saving">
                         <i class="bi bi-arrow-return-left">&zwnj;</i>
                     </a>
-                    <!-- Save Button -->
-                    <button id="save" name="save" class="btn btn-success" type="submit" title="Save">
+                    <button id="save" name="save" class="btn btn-success px-5" type="submit" title="Save">
                         <i class="bi-check-square-fill">&zwnj;</i>
                     </button>
                     {% endif %}
@@ -90,9 +86,7 @@
         </div>
         <hr class="m-0" />
         <div class="row">
-            <!-- RED -->
             {% include 'testcase_red.html' %}
-            <!-- BLUE -->
             {% include 'testcase_blue.html' %}
         </div>
     </div>
