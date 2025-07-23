@@ -2,8 +2,11 @@ import pytest
 import json
 from .conftest import generate_random_string, delete_assessment
 
-def test_admin_new_assessment(created_sample_assessment):
+def test_admin_new_assessment(authenticated_admin_client, created_sample_assessment):
+    client, csrf_token = authenticated_admin_client
     response = created_sample_assessment 
+
+    delete_assessment(client, csrf_token, created_sample_assessment)
 
 def test_admin_edit_assessment(authenticated_admin_client, created_sample_assessment):
     client, csrf_token = authenticated_admin_client

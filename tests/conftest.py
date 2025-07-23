@@ -6,6 +6,7 @@ import purpleops
 import re
 import random
 import string
+import io
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -96,7 +97,7 @@ def created_sample_user(authenticated_admin_client):
 
     # Parse JSON response
     json_data = response.get_json()
-    user_id = json_data["id"]  # adjust this key based on your actual response
+    user_id = json_data["id"]
 
     return user_id
 
@@ -150,7 +151,7 @@ def created_sample_testcase(authenticated_admin_client, created_sample_assessmen
     testcase_id = json_data["id"]
     assessment_id = json_data["assessmentid"]
 
-    create_testcase_history(client, csrf_token, testcase_id)
+    create_testcase_history_with_file(client, csrf_token, testcase_id)
 
     return assessment_id, testcase_id
 
@@ -171,16 +172,20 @@ def delete_user(client, csrf_token, user_id):
 
     assert response.status_code == 200
 
-def create_testcase_history(client, csrf_token, testcase_id):
+def create_testcase_history_with_file(client, csrf_token, testcase_id):
 
     name = generate_random_string()
+
+    file_content = b"This is the content of the file."
+    file_name = "test_file.txt"
 
     data = {
         "name": name,
         "uuid": "new-uuid",
         "state": "Waiting Blue",
+        "redfiles": (io.BytesIO(file_content), file_name),
         "csrf_token": csrf_token
     }
 
-    response = client.post(f"/testcase/{testcase_id}", data=data)
+    response = client.post(f"/testcase/{testcase_id}", data=data, content_type='multipart/form-data')
     assert response.status_code == 200
