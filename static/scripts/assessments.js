@@ -105,6 +105,7 @@ $('#deleteAssessmentButton').click(function() {
 		},
 		success: function(result) {
 			$('#assessmentsTable').bootstrapTable('removeByUniqueId', rowData.id)
+			showToast("Assessment deleted.")
 			$('#deleteAssessmentModal').modal('hide')
 		}
 	});

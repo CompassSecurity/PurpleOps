@@ -221,9 +221,9 @@ $("#ttpform").submit(function(e) {
         })
         .catch(error => {
             if (error.message.includes('409')) {
-                alert("Testcase save error - Testcase was saved in the meantime");
+                showToast("Testcase save error - Testcase was saved in the meantime", "error");
             } else {
-                alert("Testcase save error - contact admin to review log");
+                showToast("Testcase save error - contact admin to review log", "error");
                 console.error(error); // Log the error for debugging
             }
         });
@@ -360,7 +360,7 @@ function copyCodeBlocks() {
                     showToast('Code Copied')
                 })
                 .catch(err => {
-                    alert('Failed to copy code: ' + err)
+                    showToast('Failed to copy code: ' + err, 'error')
                 });
         });
 

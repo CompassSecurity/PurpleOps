@@ -43,6 +43,11 @@
             </button>
         {% endif %}
         <span id="selected-count" class="ms-1"></span>
+        {% if current_user.has_role("Admin") or current_user.has_role("Red") %}
+            <button id="deleteSelected" class="btn btn-danger d-none">
+                <i class="bi-trash-fill">&zwnj;</i>
+            </button>
+        {% endif %}
     </div>
     <table data-toggle="table" data-toolbar="#toolbar" data-search="true" data-show-columns="true" data-search-highlight="true" data-show-search-clear-button="true" data-filter-control="true" id="assessmentTable" data-click-to-select="true" data-maintain-meta-data="false" data-sort-name="modified" data-sort-order="desc" data-silent-sort="false" style="display:none;"  data-unique-id="id" data-id-field="id" data-cookie="true" data-cookie-id-table="assessmentTable">
         <thead>
