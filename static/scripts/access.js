@@ -1,5 +1,5 @@
 // Delay table showing until page is loaded to prevent jumping
-$(function () {
+$(function() {
 	$('#userTable').show()
 })
 
@@ -9,7 +9,7 @@ var rowData = null
 function newUserModal(e) {
 	// This mess allows us to reuse the modal between new and edit user
 	$("#userDetailForm").trigger('reset')
-	$('#userDetailForm').attr('action', '/manage/access/user') 
+	$('#userDetailForm').attr('action', '/manage/access/user')
 	$('#userDetailLabel').text("New User")
 	$('#userDetailButton').text("Create")
 	$('#password').attr("type", "text")
@@ -23,7 +23,7 @@ function editUserModal(e) {
 	row = $(e).closest("tr")
 	rowData = $('#userTable').bootstrapTable('getData')[row.data("index")]
 	$("#userDetailForm").trigger('reset')
-	$('#userDetailForm').attr('action', '/manage/access/user/' + rowData.id) 
+	$('#userDetailForm').attr('action', '/manage/access/user/' + rowData.id)
 	$('#userDetailLabel').text("Edit User")
 	$('#userDetailButton').text("Update")
 	// Make it look like a password is in the form, stops admins getting scared
@@ -42,52 +42,65 @@ function deleteUserModal(e) {
 	// Globally store the clicked row for AJAX operations
 	row = $(e).closest("tr")
 	rowData = $('#userTable').bootstrapTable('getData')[row.data("index")]
-	$('#deleteUserForm').attr('action', '/manage/access/user/' + rowData.id) 
+	$('#deleteUserForm').attr('action', '/manage/access/user/' + rowData.id)
 	$('#deleteUserWarning').text(`Really Delete ${rowData.username}?`)
 	$('#deleteUserModal').modal('show')
 }
 
 // Hook the native new/edit user HTML form to catch and action the response
-$("#userDetailForm").submit(function(e){
+$("#userDetailForm").submit(function(e) {
 	e.preventDefault();
 
-    fetch(e.target.action, {
-        method: 'POST',
-        body: new URLSearchParams(new FormData(e.target))
-    }).then((response) => {
-        return response.json();
-    }).then((body) => {
-		// Format assessment cell
-		if (body.roles.includes("Admin")) {
-			body.assessments = "*"
-		} else if (body.assessments.length) {
-			body.assessments = body.assessments.join(", ")
-		} else {
-			body.assessments = "-"
-		}
+	fetch(e.target.action, {
+			method: 'POST',
+			body: new URLSearchParams(new FormData(e.target))
+		})
+		.then(async (response) => {
+			const data = await response.json();
 
-		newRow = {
-			id: body.id,
-			username: body.username,
-			email: body.email,
-			roles: body.roles.length ? body.roles.join(", ") : "-",
-			assessments: body.assessments,
-			actions: body.username
-		}
-        
-		// This function is shared between new and edit user, so do we need to
-		// edit a row or create a new one?
-		if ($('#userTable').bootstrapTable('getRowByUniqueId', body.id)) {
-			$('#userTable').bootstrapTable('updateRow', {
-				index: row.data("index"),
-				row: newRow
-			})
-		} else {
-			$('#userTable').bootstrapTable('append', [newRow])
-		}
+			if (!response.ok) {
+				// Show error message from server
+				showToast(data.error || "An unknown error occurred.", "error");
+				throw new Error(data.error); // Stop execution of .then() chain
+			}
 
-		$('#userDetailModal').modal('hide')
-    })
+			return data;
+		})
+		.then((body) => {
+			// Format assessment cell
+			if (body.roles.includes("Admin")) {
+				body.assessments = "*";
+			} else if (body.assessments.length) {
+				body.assessments = body.assessments.join(", ");
+			} else {
+				body.assessments = "-";
+			}
+
+			newRow = {
+				id: body.id,
+				username: body.username,
+				email: body.email,
+				roles: body.roles.length ? body.roles.join(", ") : "-",
+				"last-login": body["last-login"] || "-", // Support dash notation
+				assessments: body.assessments,
+				actions: body.username
+			};
+
+			if ($('#userTable').bootstrapTable('getRowByUniqueId', body.id)) {
+				const index = $('#userTable').bootstrapTable('getData').findIndex(row => row.id === body.id);
+				$('#userTable').bootstrapTable('updateRow', {
+					index: index,
+					row: newRow
+				});
+			} else {
+				$('#userTable').bootstrapTable('append', [newRow]);
+			}
+
+			$('#userDetailModal').modal('hide');
+		})
+		.catch((error) => {
+			console.error("Request failed:", error);
+		});
 });
 
 // AJAX DELETE user call
@@ -100,6 +113,7 @@ $('#deleteUserButton').click(function() {
 			'X-CSRFToken': csrf_token
 		},
 		success: function(result) {
+			showToast('User deleted.')
 			$('#userTable').bootstrapTable('removeByUniqueId', rowData.id)
 			$('#deleteUserModal').modal('hide')
 		}

@@ -284,7 +284,7 @@ class Role(db.Document, RoleMixin):
 
 
 class User(db.Document, UserMixin):
-    email = db.StringField(max_length=255)
+    email = db.StringField(max_length=255, unique=True, nullable=True)
     username = db.StringField(max_length=255, unique=True, nullable=True)
     password = db.StringField(max_length=255)
     roles = db.ListField(db.ReferenceField(Role), default=[])

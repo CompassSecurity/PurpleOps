@@ -27,9 +27,18 @@ def users():
 @auth_required()
 @roles_accepted('Admin')
 def createuser():
+
+    email = request.form['email']
+    username = request.form['username']
+
+    if user_datastore.find_user(email=email):
+        return jsonify({'error': 'Email already exists'}), 400
+    if user_datastore.find_user(username=username):
+        return jsonify({'error': 'Username already exists'}), 400
+
     user = user_datastore.create_user(
-        email = request.form['email'],
-        username = request.form['username'],
+        email = email,
+        username = username,
         password = utils.hash_password(request.form['password']),
         roles = [Role.objects(name=role).first() for role in request.form.getlist('roles')],
         assessments = [Assessment.objects(name=assessment).first() for assessment in request.form.getlist('assessments')]
@@ -40,37 +49,55 @@ def createuser():
 @auth_required()
 @roles_accepted('Admin')
 def edituser(id):
-    origUser = User.objects(id=id).first()
     user = User.objects(id=id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
     if request.method == 'POST':
+        new_email = request.form.get('email')
+        new_username = request.form.get('username')
+
+        # Check for email conflict
+        if new_email and User.objects(email=new_email, id__ne=id).first():
+            return jsonify({'error': 'Email already in use'}), 400
+
+        # Check for username conflict
+        if new_username and User.objects(username=new_username, id__ne=id).first():
+            return jsonify({'error': 'Username already in use'}), 400
+
         if "password" in request.form and request.form['password'].strip():
             user.password = utils.hash_password(request.form['password'])
 
         user = applyFormData(user, request.form, ["username", "email"])
-        # You cannot rename the inbuilt admin account
-        if origUser.username == "admin" and user.username != "admin":
+
+        # Prevent renaming built-in admin
+        if user.username != "admin" and User.objects(id=id).first().username == "admin":
             user.username = "admin"
 
-        user.roles = []
-        for role in request.form.getlist('roles'):
-            user.roles.append(Role.objects(name=role).first())
-        # You cannot de-admin the inbuilt admin, re-add admin wiped admin role
-        if user.username == "admin" and "Admin" not in [u.name for u in user.roles]:
+        # Update roles
+        user.roles = [
+            Role.objects(name=role).first()
+            for role in request.form.getlist('roles')
+        ]
+
+        # Ensure admin keeps the Admin role
+        if user.username == "admin" and "Admin" not in [r.name for r in user.roles]:
             user.roles.append(Role.objects(name="Admin").first())
 
-        user.assessments = []
-        for assessment in request.form.getlist('assessments'):
-            user.assessments.append(Assessment.objects(name=assessment).first())
-        # Admin users have implied access to all assessments, wipe selected assessments
-        if "Admin" in [u.name for u in user.roles]:
+        # Update assessments
+        user.assessments = [
+            Assessment.objects(name=assessment).first()
+            for assessment in request.form.getlist('assessments')
+        ]
+
+        # Admins get implicit access to all assessments
+        if "Admin" in [r.name for r in user.roles]:
             user.assessments = []
 
         user.save()
         return jsonify(user.to_json()), 200
-        
+
     if request.method == 'DELETE':
-        # Prevent inbuilt admin deletion
         if user.username != "admin":
             user.delete()
-            user.save()
         return "", 200
