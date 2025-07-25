@@ -1,91 +1,53 @@
-anyio==3.7.1
-asn1crypto==1.5.1
-Babel==2.12.1
-bcrypt==4.0.1
-bleach==6.0.0
-blinker==1.6.2
-cbor2==5.4.6
-# sec update
-certifi==2024.7.4
-# python 3.12 support update
+argon2-cffi==25.1.0
+argon2-cffi-bindings==21.2.0
+babel==2.17.0
+bleach==6.2.0
+blinker==1.9.0
+certifi==2025.7.14
 cffi==1.17.1
-charset-normalizer==3.2.0
-click==8.1.6
-# sec update
-cryptography==44.0.2
-dnspython==2.4.0
+charset-normalizer==3.4.2
+click==8.2.1
+cryptography==45.0.5
+dnspython==2.7.0
 docxcompose==1.4.0
-docxtpl==0.16.7
-email-validator==2.0.0.post2
-et-xmlfile==1.1.0
-exceptiongroup==1.1.2
-# must be pinned to 2.2.5 bcs. flask-mongoengine
-Flask==2.2.5
-Flask-BabelEx==0.9.4
-Flask-Login==0.6.2
-Flask-Mail==0.9.1
-flask-mailman==0.3.0
-flask-mongoengine==1.0.0
+docxtpl==0.20.1
+email_validator==2.2.0
+et_xmlfile==2.0.0
+Flask==3.1.1
+Flask-Login==0.6.3
 Flask-Principal==0.4.0
-# vulnerable
-Flask-Security==3.0.0
-# vulnerable, can't update bcs. flask-mongoengine
-Flask-Security-Too==5.0.2
-Flask-SQLAlchemy==3.0.5
-Flask-WTF==1.1.1
-gitdb==4.0.10
-GitPython==3.1.41
-# python 3.12 support update
-greenlet==3.1.1
-h11==0.14.0
-httpcore==0.17.3
-# sec update
-idna==3.7
-importlib-metadata==6.8.0
-importlib-resources==6.0.0
-itsdangerous==2.1.2
-# sec update
-Jinja2==3.1.5
-lxml==4.9.3
-MarkupSafe==2.1.3
-mkdocs-material-extensions==1.1.1
-mongoengine==0.27.0
-openpyxl==3.1.2
+Flask-Security-Too==5.6.2
+Flask-WTF==1.2.2
+gitdb==4.0.12
+GitPython==3.1.44
+gunicorn==23.0.0
+idna==3.10
+importlib_resources==6.5.2
+iniconfig==2.1.0
+itsdangerous==2.2.0
+Jinja2==3.1.6
+lxml==6.0.0
+Markdown==3.8.2
+MarkupSafe==3.0.2
+mongoengine==0.29.1
+openpyxl==3.1.5
+packaging==25.0
 passlib==1.7.4
-phonenumberslite==8.13.17
-pycparser==2.21
-# sec update
-pydantic==1.10.13
-# sec update
-pymongo==4.6.3
-# dependency update from cryptography
-pyOpenSSL==25.0.0
-pypng==0.20220715.0
-python-docx==0.8.11
-python-dotenv==1.0.0
-pytz==2023.3
-PyYAML==6.0.1
-qrcode==7.4.2
-# sec update
-requests==2.32.0
-six==1.16.0
-smmap==5.0.0
-sniffio==1.3.0
-speaklater==1.3
-SQLAlchemy==2.0.19
-SQLAlchemy-Utils==0.41.1
-# dependency update from cryptography > pyOpenSSL
-typing_extensions==4.9.0
-# sec update
-urllib3==2.2.2
-webauthn==1.9.0
+pluggy==1.6.0
+pycparser==2.22
+Pygments==2.19.2
+pymdown-extensions==10.16
+pymongo==4.13.2
+pytest==8.4.1
+python-docx==1.2.0
+python-dotenv==1.1.1
+PyYAML==6.0.2
+qrcode==8.2
+requests==2.32.4
+six==1.17.0
+smmap==5.0.2
+typing_extensions==4.14.1
+urllib3==2.5.0
 webencodings==0.5.1
-# vulnerable (updated to latest 2.3.x version)
-Werkzeug==2.3.8
-WTForms==3.0.1
-zipp==3.16.2
-# sec update
-gunicorn==22.0.0
-Markdown==3.6
-pymdown-extensions==10.8.1
-Pygments==2.18.0
+Werkzeug==3.1.3
+WTForms==3.2.1

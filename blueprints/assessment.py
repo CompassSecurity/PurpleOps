@@ -51,7 +51,8 @@ def deleteassessment(id):
 def loadassessment(id):
     return render_template(
         'assessment.html',
-        testcases = TestCase.objects(assessmentid=id).all(),
+        testcases = TestCase.objects(assessmentid=id, deleted=False).all(),
+        deleted_testcases = TestCase.objects(assessmentid=id, deleted=True).all(),
         assessment = Assessment.objects(id=id).first(),
         templates = TestCaseTemplate.objects(),
         mitres = sorted(

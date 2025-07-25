@@ -153,31 +153,128 @@ function cloneTest(event) {
 	});
 };
 
+// Delete Single Testcases Modal
 function deleteTestcaseModal(event) {
-	// Globally store the clicked row for AJAX operations
-	row = $(event.target).closest("tr")
-	rowData = $('#assessmentTable').bootstrapTable('getData')[row.data("index")]
-	$('#deleteTestcaseForm').attr('action', `/testcase/${rowData.id}/delete`) 
-	$('#deleteTestcaseWarning').text(`Really Delete ${rowData.name}?`)
-	$('#deleteTestcaseModal').modal('show')
+	let row = $(event.target).closest("tr");
+	rowData = $('#assessmentTable').bootstrapTable('getData')[row.data("index")];
+
+	isMultiDelete = false;
+
+	// Set form action and modal message
+	$('#deleteTestcaseForm').attr('action', `/testcase/${rowData.id}/toggle-delete`);
+	$('#deleteTestcaseWarning').text(`Really Delete \"${rowData.name}\"?`);
+	$('#deleteTestcaseModal').modal('show');
 }
+
+// Toggle visibility of deleteSelceted button
+$('#assessmentTable').on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function () {
+	const selections = $('#assessmentTable').bootstrapTable('getSelections');
+	if (selections.length > 0) {
+		$('#deleteSelected').removeClass('d-none');
+	} else {
+		$('#deleteSelected').addClass('d-none');
+	}
+});
+
+// Hookup deleteSelceted button with modal
+$('#deleteSelected').on('click', deleteMultipleTestcasesModal);
+
+// Delete Multiple Testcases Modal
+function deleteMultipleTestcasesModal() {
+	selectedTestcases = $('#assessmentTable').bootstrapTable('getSelections');
+
+	if (selectedTestcases.length === 0) return;
+
+	isMultiDelete = true;
+
+	$('#deleteTestcaseForm').removeAttr('action'); // clear form action
+	if (selectedTestcases.length === 1){
+		$('#deleteTestcaseWarning').text(`Really delete ${selectedTestcases.length} selected testcase?`);
+	}
+	else{
+		$('#deleteTestcaseWarning').text(`Really delete ${selectedTestcases.length} selected testcases?`);
+	}
+	$('#deleteTestcaseModal').modal('show');
+}
+
 
 // AJAX DELETE testcase call and remove from table
 $('#deleteTestcaseButton').click(function() {
 	var csrf_token = $('meta[name="csrf-token"]').attr('content');
+
+	if (isMultiDelete) {
+		const requests = selectedTestcases.map(tc => {
+			return $.ajax({
+				url: `/testcase/${tc.id}/toggle-delete`,
+				type: 'POST',
+				headers: {
+					'X-CSRFToken': csrf_token
+				}
+			});
+		});
+
+		$.when(...requests).done(function() {
+			// Remove each row from table
+			selectedTestcases.forEach(tc => {
+				$('#assessmentTable').bootstrapTable('removeByUniqueId', tc.id);
+			});
+
+			$('#deleteTestcaseModal').modal('hide');
+			$('#deleteSelected').addClass('d-none');
+			if (selectedTestcases.length === 1){
+				showToast('Selected testcase deleted');
+			}
+			else{
+				showToast('Selected testcases deleted');
+			}
+			isMultiDelete = false;
+		});
+	} else {
+		// Single delete
+		$.ajax({
+			url: `/testcase/${rowData.id}/toggle-delete`,
+			type: 'POST',
+			headers: {
+				'X-CSRFToken': csrf_token
+			},
+			success: function(result) {
+				$('#assessmentTable').bootstrapTable('removeByUniqueId', rowData.id);
+				$('#deleteTestcaseModal').modal('hide');
+				showToast('Testcase Deleted');
+			}
+		});
+	}
+});
+
+
+// AJAX RESTORE testcase call
+$(document).on('click', '.restore-btn', function() {
+	let button = $(this);
+	let testCaseId = button.data('id');
+	let csrf_token = $('meta[name="csrf-token"]').attr('content');
+
 	$.ajax({
-		url: `/testcase/${rowData.id}/delete`,
+		url: `/testcase/${testCaseId}/toggle-delete`,
 		type: 'POST',
 		headers: {
 			'X-CSRFToken': csrf_token
 		},
-		success: function(result) {
-			$('#assessmentTable').bootstrapTable('removeByUniqueId', rowData.id)
-			$('#deleteTestcaseModal').modal('hide')
-			showToast('Testcase Deleted');
+		success: function(response) {
+			// Remove the row from the modal table
+			button.closest('tr').fadeOut(function() {
+				$(this).remove();
+
+				// Optionally show a toast or notification
+				showToast('Testcase Restored');
+			});
+		},
+		error: function(xhr) {
+			console.error(xhr.responseText);
+			showToast('Failed to restore testcase', 'error');
 		}
 	});
 });
+
 
 // Table formatters
 function nameFormatter(name, row) {
@@ -240,7 +337,7 @@ function bgFormatter(value) {
 	} else if (["Ready"].includes(value)){
 		bg = "secondary"	
 	} else if (["Pending"].includes(value)) {
-		bg = "light"
+		bg = ""
 	} else if (["False", false, "0.0", "0.5"].includes(value)) {
 		bg = "dark"
 		text = "light"
@@ -270,7 +367,7 @@ $("#variablesForm").submit(function(e){
 	const fileUpload = document.getElementById('variablesFile');
 
 	if (fileUpload.files.length === 0) {
-		alert("Please select a JSON file.")
+		showToast("Please select a JSON file.", 'error')
 		return;
 	}
 
@@ -284,7 +381,7 @@ $("#variablesForm").submit(function(e){
       // Valid JSON, proceed with storing data
 
 			if (typeof jsonData !== 'object' || jsonData === null) {
-				alert("Invalid JSON format.")
+				showToast("Invalid JSON format.", 'error')
 				return;
 			}
 
@@ -299,15 +396,15 @@ $("#variablesForm").submit(function(e){
       	}
       }
 
-      alert("JSON data uploaded and stored in session storage.")
+      showToast("JSON data uploaded and stored in session storage.")
       $('#variablesModal').modal('hide')
   } catch (error) {
-  	alert("Error parsing JSON: " + error.message)
+  	showToast("Error parsing JSON: " + error.message, 'error')
   }
 };
 
 reader.onerror = function(error) {
-	alert("Error reading file: " + error.message)
+	showToast("Error reading file: " + error.message, 'error')
 };
 
 reader.readAsText(file);

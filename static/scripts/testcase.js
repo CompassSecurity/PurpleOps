@@ -201,32 +201,37 @@ $("#ttpform").submit(function(e) {
     convertLocalToUtc("#time-incidenttime", formData, 'incidenttime');
 
     fetch(e.target.action, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.status === 200) { // Use === for strict comparison
-                return response.text(); // Chain .text() for text response
-            } else {
-                throw new Error(`Error: ${response.status}`);
-            }
-        })
-        .then(text => {
-            displayNewEvidence(new FormData(e.target));
-            showToast('Testcase Saved');
-            const modifyTimeInput = document.getElementById('modifytime');
-            if (modifyTimeInput) {
-                modifyTimeInput.value = text; // Set the response text as the new value
-            }
-        })
-        .catch(error => {
-            if (error.message.includes('409')) {
-                alert("Testcase save error - Testcase was saved in the meantime");
-            } else {
-                alert("Testcase save error - contact admin to review log");
-                console.error(error); // Log the error for debugging
-            }
-        });
+        method: 'POST',
+        body: formData
+    })
+    .then(async response => {
+        const text = await response.text();
+        if (response.ok) {
+            return text;
+        } else {
+            // Attach both status and response text
+            const error = new Error(`Error ${response.status}: ${text}`);
+            error.status = response.status;
+            error.responseText = text;
+            throw error;
+        }
+    })
+    .then(text => {
+        displayNewEvidence(new FormData(e.target));
+        showToast('Testcase Saved');
+        const modifyTimeInput = document.getElementById('modifytime');
+        if (modifyTimeInput) {
+            modifyTimeInput.value = text;
+        }
+    })
+    .catch(error => {
+        if (error.status === 409) {
+            showToast(`Conflict (409): ${error.responseText}`, "error");
+        } else {
+            showToast(`Testcase save error - ${error.message}`, "error");
+            console.error(error);
+        }
+    });
 });
 
 // Change time stamps to local times
@@ -311,25 +316,28 @@ function displayNewEvidence(form) {
                 return
             }
             testcaseId = window.location.pathname.split("/").slice(-1)[0]
+            const fileNameForURL = encodeURIComponent(file.name);
+            const fileNameForHTML = $("<span>").text(file.name).html();
+
             html = `
 				<li class="list-group-item">
 					<button type="button" class="btn btn-outline-danger btn-sm me-2 evidence-delete evidence-${colour}">
 						<i class="bi-trash small">&zwnj;</i>
 					</button>
-					<a href="/testcase/${testcaseId}/evidence/${file.name}?download=true" class="btn btn-outline-primary btn-sm me-2">
+					<a href="/testcase/${testcaseId}/evidence/${fileNameForURL}?download=true" class="btn btn-outline-primary btn-sm me-2">
 						<i class="bi-download small">&zwnj;</i>
 					</a>`
             if (file.name.toLowerCase().endsWith(".png") ||
                 file.name.toLowerCase().endsWith(".jpg") ||
                 file.name.toLowerCase().endsWith(".jpeg")) {
                 html += `
-						<a href="/testcase/${testcaseId}/evidence/${file.name}" target="_blank">
-							<img class="img-fluid img-thumbnail" style="max-width: 80%" src="/testcase/${testcaseId}/evidence/${file.name}"/>
+						<a href="/testcase/${testcaseId}/evidence/${fileNameForURL}" target="_blank">
+							<img class="img-fluid img-thumbnail" style="max-width: 80%" src="/testcase/${testcaseId}/evidence/${fileNameForURL}"/>
 						</a>
-						<input style="margin-left: 6em; width:80%;" class="form-control form-control-sm" type="text" placeholder="Caption..." value="" id="${colour.toUpperCase()}${file.name}" name="${colour.toUpperCase()}${file.name}"/>
+						<input style="margin-left: 6em; width:80%;" class="form-control form-control-sm" type="text" placeholder="Caption..." value="" id="${colour.toUpperCase()}${fileNameForHTML}" name="${colour.toUpperCase()}${fileNameForHTML}"/>
 					`
             } else {
-                html += `<span class="name small">${ file.name }</span>`
+                html += `<span class="name small">${ fileNameForHTML }</span>`
             }
             $(`#evidence-${colour}`).append(html)
             $(`#${colour}files`).val("")
@@ -348,13 +356,19 @@ function copyCodeBlocks() {
 
         // Add click event listener to the button
         copyButton.addEventListener('click', () => {
-            const text = codeBlock.textContent;
+            let text = codeBlock.textContent;
+            
+            // Remove last line break if present
+            if (text.endsWith('\n')) {
+                text = text.slice(0, -1);
+            }
+
             navigator.clipboard.writeText(text)
                 .then(() => {
                     showToast('Code Copied')
                 })
                 .catch(err => {
-                    alert('Failed to copy code: ' + err)
+                    showToast('Failed to copy code: ' + err, 'error')
                 });
         });
 

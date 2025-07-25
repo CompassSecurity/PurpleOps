@@ -14,14 +14,6 @@
 </p>
 
 <p align="center">
-  <a href="#key-features">Key Features</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#contact-us">Contact Us</a> •
-  <a href="#credits">Credit</a> •
-  <a href="#license">License</a>
-</p>
-
-<p align="center">
   <img src="static/images/demo.gif">
 </p>
 
@@ -133,15 +125,80 @@ $ sudo docker compose up
   ```
 </details>
 
-## Contact Us
+## Compass Security Fork
+The Compass Security fork includes fixes and new features!
 
-We would love to hear back from you, if something is broken or have and idea to make it better add a ticket or connect to us on the [PurpleOps Discord](https://discord.gg/2xeA6FB3GJ) or email us at pops@purpleops.app | `@_w_m__` 
+### Updated Dependencies
+The Python dependencies (e.g. Flask) were updated to the latest versions.
+
+### Restructured Test Case Form and Flow-Based Approach
+We have redesigned the test case form to prioritise the elements that we believe are important during a purple team engagement. 
+<br> Is there anything missing? Please let us know — we are eager to hear how other analysts approach Purple Teaming engagements.
+
+<br>Moreover, we have implemented a flow-based approach to facilitate collaboration with the Blue Team.
+<img width="2061" height="612" alt="image" src="https://github.com/user-attachments/assets/60e1d78d-cb73-4c10-ae16-9b8f296e59a1" />
+
+#### Waiting Blue:
+This signals to the blue team that input is expected from their side. Once the required information has been added, the Blue team can set the state to 'Waiting Red'.
+Users with the 'Blue' role can only edit a test case if it is in the 'Waiting Blue' or 'Waiting Red' state.
+
+#### Waiting Red:
+This signals to the red team that the blue team has finished adding their details to the test case. The red team can then check that all the required information is present. If so, the state can be changed to 'Complete'.
+
+#### Complete:
+The blue team cannot make any more changes to the test case.
+
+
+### Pytests
+We have created pytests for each route. This makes it easy to check whether the application has been affected by any changes made to it.
+<br><br>Note: We are still missing security checks (e.g. RBAC) and application logic checks, so if you would like to contribute, we would be glad to merge your pull request!
+
+### Dark Mode
+Enjoy PurpleOps in dark mode. To enable this, go to the settings menu.
+<img width="2063" height="1041" alt="darkmode_overview" src="https://github.com/user-attachments/assets/1b2870a6-319a-4ca6-8366-f5a8e638842e" />
+<img width="2066" height="1120" alt="darkmode_testcase" src="https://github.com/user-attachments/assets/056c721a-2a00-473f-8cbe-39537a843491" />
+
+### Test Case History
+The Test Case History allows you to view previous saved versions of the test case. This feature is only available after an initial save, not after an import. Please note that evidence files are not stored.
+![test_case_history](https://github.com/user-attachments/assets/b15c3799-a73b-4845-9ec3-fe9f04f3b7a4)
+
+### Restore Deleted Test Cases
+You can now restore deleted test cases (requires page reload).
+![test_case_restore](https://github.com/user-attachments/assets/a66ba8b0-854f-436b-9602-9c2a244e3ded)
+
+### Test Case Knowlege Base and Variables File
+We added the option to add an knowledge base MD file for each TPP. You can find an example here:
+https://github.com/CompassSecurity/PurpleOps/blob/main/custom/testcaseskb/T1087_002.md
+
+To view the KB click on the "compass" icon in the test case:
+![test_case_kb](https://github.com/user-attachments/assets/f06ed191-2812-4259-9317-ed6d865a729e)
+
+The KB also enables you to set placeholders for frequently used strings. For instance, you could define {{TARGET_DOMAIN_USER}} as a placeholder in an MD file for a command.
+```
+net user {{TARGET_DOMAIN_USER}} /domain 
+```
+Define a JSON file which contains all your placeholders and the coresponding text:
+```
+{
+"DOMAIN_NAME" : "testlab.local",
+"LOWPRIVILEGED_DOMAIN_USER" : "tmassie",
+"TARGET_DOMAIN_USER" : "administrator",
+"DC_IP" : "10.0.1.10"
+}
+```
+Upload the JSON file to PurpleOps using your browser. The values will be stored in your session storage (cleared after browser is closed). Use the toggle in the test case KB to replace the placeholders with real data.
+![test_case_kb_variables](https://github.com/user-attachments/assets/547f4a21-a043-47a9-8be4-c9a176a23029)
+
 
 ## Credits
-
+- PurpleOps https://github.com/CyberCX-STA/PurpleOps
 - Atomic Red Team [(LICENSE)](https://github.com/redcanaryco/atomic-red-team/blob/master/LICENSE.txt) for sample commands
 - [CyberCX](https://cybercx.com.au/) for foundational support
 
 ## License
-
 Apache
+
+
+
+
+

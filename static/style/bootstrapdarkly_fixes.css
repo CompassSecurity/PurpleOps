@@ -1,0 +1,55 @@
+:root {
+  --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+  --bs-primary: #593196;
+  --bs-body-color: #fff;
+  --bs-link-color: #00bc8c;
+  --bs-link-color-rgb: 0, 188, 140;
+  --bs-link-decoration: underline;
+  --bs-link-hover-color: #009670;
+  --bs-link-hover-color-rgb: 0, 150, 112;
+  --bs-light: #fff;
+}
+
+.progress {
+    height: 1rem !important;
+}
+.navbar {
+    padding-top: .5rem !important;
+    padding-bottom: .5rem !important;
+}
+
+.form-select {
+ background-color: #444;
+ color: #fff;
+}
+
+.form-control {
+ background-color: #444 !important;
+ color: #fff;
+ border-radius: 0;
+}
+
+.form-control:focus {
+  background-color: #444 !important;
+  color: #fff;
+}
+
+.blue .input-group-text {
+    color: #0d6efd !important;
+}
+.btn {
+    --bs-btn-border-radius: 0;
+}
+
+.btn-light {
+    --bs-btn-bg: #444;
+    --bs-btn-border-color: #444;
+}
+
+#qrcode {
+    background: #eee;
+}
+
+#hexagons p {
+    padding-top: 12px;
+}

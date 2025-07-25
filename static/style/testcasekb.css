@@ -150,3 +150,11 @@ summary {
 details[open] summary {
   background-color: #f0f0f0;
 }
+
+[data-bs-theme=dark] {
+
+details[open] summary {
+  background-color: #444;
+}
+
+}

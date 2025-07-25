@@ -23,13 +23,15 @@
 {%- endmacro %}
 
 {% macro toast(title) -%}
-<div class="position-fixed top-0 end-50" style="z-index: 11;margin-top: 100px">
-	<div id="toast" class="toast hide bg-info" role="alert" aria-live="assertive" aria-atomic="true">
-		<div class="toast-header">
-		<div id="toastBody" class="toast-body me-auto"></div>
-		<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-		</div>
-	</div>
+<div class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999; margin-top: 100px;">
+  <div id="toast" class="toast hide bg-info text-white shadow rounded-3 overflow-hidden p-2" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 300px;">
+    <div class="d-flex justify-content-end m-0 p-0">
+      <button type="button" class="btn-close btn-close-white m-0 p-0" data-bs-dismiss="toast" aria-label="Close" style="font-size: 0.9rem;"></button>
+    </div>
+    <div id="toastBody" class="fw-bold pt-1 pb-1 px-2">
+      Toast message.
+    </div>
+  </div>
 </div>
 {%- endmacro %}
 

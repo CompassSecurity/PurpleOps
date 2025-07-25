@@ -1,1 +1,0 @@
-[{"_id":{"$oid":"67e111dd4d88275628a1184a"},"name":"test","description":"test","created":{"$date":"2025-03-24T08:03:41.275Z"},"targets":[],"sources":[],"tools":[],"controls":[],"tags":[],"preventionsources":[],"detectionsources":[],"navigatorexport":""}]

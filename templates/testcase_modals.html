@@ -65,3 +65,39 @@ No data
 {% endif %}
 
 {{ macros.modalTail(name="testcaseKB", cancelLabel="Close") }}
+
+<!-- History Modal -->
+{{ macros.modalHead(name="testcaseHistory", title="Test Case History", xl=True) }}
+
+{% if history_entries %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Version</th>
+            <th>Timestamp (UTC)</th>
+            <th>Modified By</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in history_entries %}
+        <tr>
+            <td>{{ entry.version }}</td>
+            <td>{{ entry.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+            <td>{{ entry.modified_by or "Unknown" }}</td>
+            <td>
+                <a class="btn btn-sm btn-outline-primary"
+                   href="/testcase/{{ testcase.id }}/history/{{ entry.version }}"
+                   target="_blank">
+                    View
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No history available.</p>
+{% endif %}
+
+{{ macros.modalTail(name="testcaseHistory", cancelLabel="Close") }}

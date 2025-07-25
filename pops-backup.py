@@ -1,3 +1,4 @@
+# This script is broken
 import csv
 import os
 import json
@@ -8,6 +9,7 @@ from model import *
 from dotenv import load_dotenv
 from pathlib import Path
 from flask import Flask 
+import mongoengine as me
 
 logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
 load_dotenv()
@@ -169,7 +171,7 @@ if __name__ == "__main__":
         if not args.host is None:
             app.config["MONGODB_SETTINGS"]["host"] = args.host
             
-        db.init_app(app)
+        me.connect(**app.config["MONGODB_SETTINGS"])
         
         if not os.path.isdir(args.files):
             raise Exception("Invalid PurpleOps files directory, does not exist")

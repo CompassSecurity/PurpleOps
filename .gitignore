@@ -135,6 +135,7 @@ dmypy.json
 *.key
 files/
 custom/testcases
+custom/testcaseskb
 
 supervisord.pid
 sampledata/sigma/*

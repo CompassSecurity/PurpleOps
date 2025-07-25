@@ -2,7 +2,7 @@
 	<div class="row my-2">
 		<div class="col input-group-sm">
 			<span class="input-group-text text-primary rounded-0 rounded-top border-bottom-0">Logging</span>
-			<div class="form-group row m-0 py-2 rounded-bottom" style="border: 1px solid #ededed">
+			<div class="form-group row m-0 py-2 rounded-bottom border">
 					<label class="col-6 col-form-label">Logged</label>
 					<div class="col-6">
 						<div class="form-check form-check-inline">
@@ -19,7 +19,7 @@
 					</div>
 			</div>
 			<span class="input-group-text text-primary mt-3 rounded-0 rounded-top border-bottom-0">Prevention</span>
-			<div class="form-group row m-0 py-2 rounded-bottom" style="border: 1px solid #ededed">
+			<div class="form-group row m-0 py-2 rounded-bottom border">
 				<label class="col-6 col-form-label">Prevented</label>
 				<div class="col-6">
 					<div class="form-check form-check-inline">
@@ -59,7 +59,7 @@
 				</div>
 			</div>
 			<span class="input-group-text text-primary mt-3 rounded-0 rounded-top border-bottom-0">Alerting</span>
-			<div class="form-group row m-0 py-2 rounded-bottom" style="border: 1px solid #ededed">
+			<div class="form-group row m-0 py-2 rounded-bottom border">
 				<label class="col-6 col-form-label">Alerted</label>
 				<div class="col-6">
 					<div class="form-check form-check-inline">
@@ -131,7 +131,7 @@
 				</select>
 			</div>
 			<span class="input-group-text text-primary mt-3 rounded-0 rounded-top border-bottom-0">Incident Creation</span>
-			<div class="form-group row m-0 py-2 rounded-bottom" style="border: 1px solid #ededed">
+			<div class="form-group row m-0 py-2 rounded-bottom border">
 				<label class="col-6 col-form-label">Incident Created</label>
 				<div class="col-6">
 					<div class="form-check form-check-inline">
@@ -193,12 +193,10 @@
 	</div>
 	<div class="row m-0">
 		<ul class="list-group p-0" id="evidence-blue">
-			<li class="list-group-item" style="padding-left: 0px;padding-right: 0px;">
-				<div class="input-group input-group-sm">
-					<label class="input-group-text text-danger" for="bluefiles">Upload Evidence</label>
-					<input type="file" class="form-control" id="bluefiles" name="bluefiles" multiple="multiple" autocomplete="off">
-				</div>
-			</li>
+			<div class="input-group input-group-sm">
+				<label class="input-group-text text-danger" for="bluefiles">Upload Evidence</label>
+				<input type="file" class="form-control" id="bluefiles" name="bluefiles" multiple="multiple" autocomplete="off">
+			</div>
 			{% for file in testcase.bluefiles %}
 			<li class="list-group-item">
 				<button type="button" class="btn btn-outline-danger btn-sm me-2 evidence-delete evidence-blue">
