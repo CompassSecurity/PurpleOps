@@ -131,6 +131,24 @@ The Compass Security fork includes fixes and new features!
 ### Updated Dependencies
 The Python dependencies (e.g. Flask) were updated to the latest versions.
 
+### Restructured Test Case Form and Flow-Based Approach
+We have redesigned the test case form to prioritise the elements that we believe are important during a purple team engagement. 
+<br> Is there anything missing? Please let us know — we are eager to hear how other analysts approach Purple Teaming engagements.
+
+<br>Moreover, we have implemented a flow-based approach to facilitate collaboration with the Blue Team.
+<img width="2061" height="612" alt="image" src="https://github.com/user-attachments/assets/60e1d78d-cb73-4c10-ae16-9b8f296e59a1" />
+
+#### Waiting Blue:
+This signals to the blue team that input is expected from their side. Once the required information has been added, the Blue team can set the state to 'Waiting Red'.
+Users with the 'Blue' role can only edit a test case if it is in the 'Waiting Blue' or 'Waiting Red' state.
+
+#### Waiting Red:
+This signals to the red team that the blue team has finished adding their details to the test case. The red team can then check that all the required information is present. If so, the state can be changed to 'Complete'.
+
+#### Complete:
+The blue team cannot make any more changes to the test case.
+
+
 ### Pytests
 We have created pytests for each route. This makes it easy to check whether the application has been affected by any changes made to it.
 <br><br>Note: We are still missing security checks (e.g. RBAC) and application logic checks, so if you would like to contribute, we would be glad to merge your pull request!
