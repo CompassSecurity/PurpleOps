@@ -15,6 +15,7 @@ from flask import Flask
 from openpyxl import load_workbook
 import markdown
 import bleach
+import json
 import mongoengine as me
 
 dotenvFile = dotenv.find_dotenv()
@@ -29,63 +30,86 @@ me.connect(**app.config["MONGODB_SETTINGS"])
 if not os.path.exists(f"{PWD}/external/"):
     os.makedirs(f"{PWD}/external")
 
+MITRE_JSON_PATH = os.path.join(f"{PWD}/external/mitre", "mitre-enterprise.json")
+
 ###
 
-def pullMitreAttack (component):
-    # Pull the HTML page to find and download the link to the latest framework version
-    req = requests.get(f"https://github.com/CyberCX-STA/PurpleOps-Deps/raw/master/attack.mitre/15.1/enterprise-attack-v15.1-{component}.xlsx")
-    if req.status_code == 200:
-        #req = r.text.split('"')
-        #url = [x for x in req if "xlsx" in x and "enterprise" in x and "docs" in x and component in x][0]
-        #req = requests.get("https://attack.mitre.org" + url)
-        with open(f"{PWD}/external/mitre-{component}.xlsx", "wb") as mitreXLSX:
-            mitreXLSX.write(req.content)
+def downloadMitreAttackJson():
+    """Downloads the MITRE ATT&CK Enterprise JSON and saves it to /external/."""
+    MITRE_JSON_URL = "https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json"
 
-        wb = load_workbook(f"{PWD}/external/mitre-{component}.xlsx", read_only=True)
-        ws = wb.active
+    if os.path.exists(f"{PWD}/external/mitre"):
+        shutil.rmtree(f"{PWD}/external/mitre")
 
-        headers = [col.value for col in list(ws.rows)[0]]
+    os.makedirs(f"{PWD}/external/mitre")
 
-        return [ws.rows, headers]
-    else:
-        print(f"Failed getting information from MITRE [{req.status_code}]")
-        sys.exit()
-        
-def parseMitreTactics ():
-    rows, headers = pullMitreAttack("tactics")
-    for row in rows:
-        if row[0].value == "ID": # Skip header row
+    try:
+        response = requests.get(MITRE_JSON_URL)
+        response.raise_for_status()
+
+        with open(MITRE_JSON_PATH, "w", encoding="utf-8") as f:
+            json.dump(response.json(), f, indent=2)
+
+    except requests.RequestException as e:
+        print(f"Failed to download MITRE data: {e}")
+        sys.exit(1)
+
+
+def loadMitreJsonFromDisk():
+    """Loads the MITRE JSON file from /external/."""
+    if not os.path.exists(MITRE_JSON_PATH):
+        print(f"Missing file: {MITRE_JSON_PATH}. Run downloadMitreAttackJson() first.")
+        sys.exit(1)
+
+    with open(MITRE_JSON_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def parseMitreTactics():
+    """Parses and saves MITRE Tactics from STIX bundle."""
+    data = loadMitreJsonFromDisk()
+    for obj in data.get("objects", []):
+        if obj.get("type") == "x-mitre-tactic":
+            Tactic(
+                mitreid=obj.get("external_references", [{}])[0].get("external_id", ""),
+                name=obj.get("name", "")
+            ).save()
+
+
+def parseMitreTechniques():
+    """Parse and save MITRE techniques and sub-techniques."""
+    data = loadMitreJsonFromDisk()
+    for obj in data.get("objects", []):
+        if obj.get("type") != "attack-pattern":
             continue
-        Tactic(
-            mitreid = row[headers.index("ID")].value,
-            name = row[headers.index("name")].value
-        ).save()
 
-def parseMitreTechniques ():
-    rows, headers = pullMitreAttack("techniques")
-    for row in rows:
-        if row[0].value == "ID": # Skip header row
-            continue
+        mitre_id = obj.get("external_references", [{}])[0].get("external_id", "")
+        name = obj.get("name", "")
+        description = obj.get("description", "")
+        detection = obj.get("x_mitre_detection", "Missing data.")
+        tactics = obj.get("kill_chain_phases", [])
+        tactic_names = [phase.get("phase_name") for phase in tactics if phase.get("kill_chain_name") == "mitre-attack"]
+
         Technique(
-            mitreid = row[headers.index("ID")].value,
-            name = row[headers.index("name")].value,
-            description = row[headers.index("description")].value,
-            detection = row[headers.index("detection")].value or "Missing data.",
-            tactics = row[headers.index("tactics")].value.split(",")
+            mitreid=mitre_id,
+            name=name,
+            description=description,
+            detection=detection,
+            tactics=tactic_names
         ).save()
 
-        # Include a default reporting writeup - can be overwritten with customs
         KnowlegeBase(
-            mitreid = row[headers.index("ID")].value,
-            overview = row[headers.index("description")].value,
-            advice = row[headers.index("detection")].value or "Missing data.",
-            provider = "MITRE"
+            mitreid=mitre_id,
+            overview=description,
+            advice=detection,
+            provider="MITRE"
         ).save()
+
 
 def pullSigma ():
     if os.path.exists(f"{PWD}/external/sigma") and os.path.isdir(f"{PWD}/external/sigma"):
         shutil.rmtree(f"{PWD}/external/sigma")
-    Repo.clone_from("https://github.com/SigmaHQ/sigma", f"{PWD}/external/sigma")
+    Repo.clone_from("https://github.com/SigmaHQ/sigma", f"{PWD}/external/sigma", depth=1)
 
 def parseSigma ():
     pullSigma()
@@ -115,7 +139,7 @@ def parseSigma ():
 def pullAtomicRedTeam ():
     if os.path.exists(f"{PWD}/external/art") and os.path.isdir(f"{PWD}/external/art"):
         shutil.rmtree(f"{PWD}/external/art")
-    Repo.clone_from("https://github.com/redcanaryco/atomic-red-team", f"{PWD}/external/art")
+    Repo.clone_from("https://github.com/redcanaryco/atomic-red-team", f"{PWD}/external/art", depth=1)
 
 def parseAtomicRedTeam ():
     pullAtomicRedTeam()
@@ -250,10 +274,13 @@ if Tactic.objects.count() == 0:
     # Role.objects.delete()
     # User.objects.delete()
 
-    print("Pulling MITRE tactics")
+    print("Pulling MITRE JSON")
+    downloadMitreAttackJson()
+
+    print("Populating MITRE tactics")
     parseMitreTactics()
 
-    print("Pulling MITRE techniques")
+    print("Populating MITRE techniques")
     parseMitreTechniques()
 
     print("Pulling SIGMA detections")
