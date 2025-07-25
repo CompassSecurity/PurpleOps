@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mongodb:
-    image: mongo:7.0-rc
+    image: mongo:8.0
     container_name: mongodb
     ports:
       - 27017
