@@ -123,7 +123,7 @@ def testcasesave(id):
         requestmodifytime = request.form.get("modifytime")
         # ugly string compare of date
         if requestmodifytime != str(testcase.modifytime):
-            return ("", 409)
+            return ("Testcase has been modified in the meantime.", 409)
 
     testcase = applyFormData(testcase, request.form, directFields)
     testcase = applyFormListData(testcase, request.form, listFields)
@@ -135,6 +135,17 @@ def testcasesave(id):
 
     for field in fileFields:
         files = []
+        for file in request.files.getlist(field):
+            if request.files.getlist(field)[0].filename:
+                filename = secure_filename(file.filename)
+                path = f"files/{testcase.assessmentid}/{str(testcase.id)}/{filename}"
+                
+                # Check if file already exists
+                if os.path.exists(path):
+                    return (f"File '{filename}' already exists.", 409)
+
+                file.save(path)
+                files.append({"name": filename, "path": path, "caption": ""})
         for file in testcase[field]:
             if file.name.lower().split(".")[-1] in ["png", "jpg", "jpeg"]:
                 caption = request.form[field.replace("files", "").upper() + file.name]
@@ -145,12 +156,6 @@ def testcasesave(id):
                 "path": file.path,
                 "caption": caption
             })
-        for file in request.files.getlist(field):
-            if request.files.getlist(field)[0].filename:
-                filename = secure_filename(file.filename)
-                path = f"files/{testcase.assessmentid}/{str(testcase.id)}/{filename}"
-                file.save(path)
-                files.append({"name": filename, "path": path, "caption": ""})
         if field == "redfiles":
             testcase.update(set__redfiles=files)
         else:
