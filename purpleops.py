@@ -42,7 +42,10 @@ def index():
 # injects the theme "directory" into every request. So we don't have to rewrite this code on each page render
 @app.context_processor
 def inject_theme():
+    allowed_themes = {'light', 'dark'}
     theme = request.cookies.get('theme', 'light')
+    if theme not in allowed_themes:
+        theme = 'light'
     return dict(theme=theme)
 
 if __name__ == "__main__":
