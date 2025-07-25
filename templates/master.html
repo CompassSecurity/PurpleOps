@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-bs-theme="{{ theme }}">
 <head>
     <title>PurpleOps</title>
     <meta charset="utf-8">
@@ -14,49 +14,17 @@
     <meta property="og:image" content="static/images/logo.png">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="static/images/favicon.ico" type="image/x-icon">
-    <style>
-        /* Hacks to fix theme issues clashing */
-        .progress {
-            height: 1rem !important;
-        }
-        .navbar {
-            padding-top: .5rem !important;
-            padding-bottom: .5rem !important;
-        }
-        .bg-primary, .table-hover > tbody > tr:hover > .bg-primary {
-            color: #fff !important;
-        }
-        .list-group-item {
-            background-color: var(--bs-body-bg) !important;
-            color: #17141f !important
-        }
-        .blue .input-group-text {
-            color: #0d6efd !important;
-        }
-        .form-control {
-            border-radius: .25rem;
-        }
-        .dropdown-toggle {
-            border: 1px solid #cbc8d0;
-        }
-        .btn-light.disabled {
-            border: 1px solid #cbc8d0 !important;
-        }
-        textarea {
-            resize: none;
-        }
-        #qrcode {
-            background: #eee;
-        }
-        .dropdown-item:hover .text small {
-            color: white !important;
-        }
-        #hexagons p {
-            padding-top: 12px;
-        }
-    </style>
-    <link rel="stylesheet" href="/static/style/custom.css">
+
+
+    {% if theme == 'dark' %}
+    <link rel="stylesheet" href="/static/style/bootstrapdarkly.min.css">
+    <link rel="stylesheet" href="/static/style/bootstrapdarkly_fixes.css">
+    {% else %}
     <link rel="stylesheet" href="/static/style/bootstrappulse.min.css">
+    <link rel="stylesheet" href="/static/style/bootstrappulse_fixes.css">
+    {% endif %}
+
+    <link rel="stylesheet" href="/static/style/testcasekb.css">
     <link rel="stylesheet" href="/static/style/bootstrap-table.min.css">
     <link rel="stylesheet" href="/static/style/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/static/style/bootstrap-select.min.css">
@@ -71,6 +39,8 @@
     <script src="/static/scripts/bootstrap-table-cookie.min.js"></script>
     <script src="/static/scripts/bootstrap-select.min.js"></script>
     <script src="/static/scripts/toast.js"></script>
+    <script src="/static/scripts/theme-toggle.js"></script>
+
 
     {% include 'master_modals.html' %}
 
@@ -96,6 +66,7 @@
                     <li><a class="dropdown-item" href="/manage/access">Access Control</a></li>
                     {% endif %}
                     <li><a class="dropdown-item" href="/password/change">Change Password</a></li>
+                    <li><button class="dropdown-item d-flex align-items-center gap-2" id="themeToggleBtn">Toggle Dark Mode</button></li>
                     <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">About / Credits</a></li>
                 </ul>
                 <a href="/logout" class="btn btn-outline-danger" title="Logout">

@@ -1,0 +1,39 @@
+/* Hacks to fix theme issues clashing */
+.progress {
+    height: 1rem !important;
+}
+.navbar {
+    padding-top: .5rem !important;
+    padding-bottom: .5rem !important;
+}
+.bg-primary, .table-hover > tbody > tr:hover > .bg-primary {
+    color: #fff !important;
+}
+.list-group-item {
+    background-color: var(--bs-body-bg) !important;
+    color: #17141f !important
+}
+.blue .input-group-text {
+    color: #0d6efd !important;
+}
+.form-control {
+    border-radius: .25rem;
+}
+.dropdown-toggle {
+    border: 1px solid #cbc8d0;
+}
+.btn-light.disabled {
+    border: 1px solid #cbc8d0 !important;
+}
+textarea {
+    resize: none;
+}
+#qrcode {
+    background: #eee;
+}
+.dropdown-item:hover .text small {
+    color: white !important;
+}
+#hexagons p {
+    padding-top: 12px;
+}

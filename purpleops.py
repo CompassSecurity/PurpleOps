@@ -1,7 +1,7 @@
 import os
 from model import *
 from dotenv import load_dotenv
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, request
 from flask_security import Security, auth_required, current_user
 
 from flask_wtf.csrf import CSRFProtect
@@ -39,12 +39,11 @@ def index():
     assessments = Assessment.objects().all()
     return render_template('assessments.html', assessments=assessments)
 
-# mitigates cve-2023-49438 - can be removed with Flask-Security-Too >=5.3.3
-# see: https://github.com/brandon-t-elliott/CVE-2023-49438
-@app.after_request
-def fix_location_header(response):
-    response.autocorrect_location_header = True
-    return response
+# injects the theme "directory" into every request. So we don't have to rewrite this code on each page render
+@app.context_processor
+def inject_theme():
+    theme = request.cookies.get('theme', 'light')
+    return dict(theme=theme)
 
 if __name__ == "__main__":
     app.run(host=os.getenv('HOST'), port=int(os.getenv('PORT')))

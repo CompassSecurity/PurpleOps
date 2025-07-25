@@ -131,7 +131,7 @@
 	<div class="row my-3">
 		<div class="col">
 			<span class="input-group-text text-danger rounded-0 rounded-top border-bottom-0">Expected Result</span>
-			<div class="form-group row m-0 py-2 rounded-bottom" style="border: 1px solid #ededed">
+			<div class="form-group row m-0 py-2 rounded-bottom border">
 				<div id="urgency-container" class="row m-0 p-0 my-1">
 					<label for="priorityurgency" class="col-6 col-form-label">Priority</label>
 					<div class="col-6">
@@ -210,13 +210,11 @@
 		<div class="row m-0">
 			<ul class="list-group p-0" id="evidence-red">
 				{% if not current_user.has_role("Blue") %}
-				<li class="list-group-item" style="padding-left: 0px;padding-right: 0px;">
-					<div class="input-group input-group-sm">
-						<label class="input-group-text text-danger" for="redfiles">Upload
-							Evidence</label>
-						<input type="file" class="form-control" id="redfiles" name="redfiles" multiple="multiple"{% if current_user.has_role("Blue") %} disabled{% endif %} autocomplete="off">
-					</div>
-				</li>
+				<div class="input-group input-group-sm">
+					<label class="input-group-text text-danger" for="redfiles">Upload
+						Evidence</label>
+					<input type="file" class="form-control" id="redfiles" name="redfiles" multiple="multiple"{% if current_user.has_role("Blue") %} disabled{% endif %} autocomplete="off">
+				</div>
 				{% endif %}
 				{% for file in testcase.redfiles %}
 				<li class="list-group-item">

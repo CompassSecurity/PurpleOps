@@ -182,9 +182,9 @@ def assessmenthexagons(id):
         if not TestCase.objects(assessmentid=id, tactic=tactics[i], state="Complete", deleted=False).count():
             hiddenHexs.append({
                 "display": "none",
-                "stroke": "#ffffff",
-                "fill": "#ffffff",
-                "arrow": "rgba(0, 0, 0, 0)",
+                "stroke": "none",
+                "fill": "none",
+                "arrow": "none",
                 "text": ""
             })
             continue
@@ -211,15 +211,15 @@ def assessmenthexagons(id):
                 "display": "block",
                 "stroke": color,
                 "fill": "#eeeeee",
-                "arrow": "rgb(0, 0, 0)",
+                "arrow": "#593196",
                 "text": tactics[i]
             })
         else:
             hiddenHexs.append({
                 "display": "none",
-                "stroke": "#ffffff",
-                "fill": "#ffffff",
-                "arrow": "rgba(0, 0, 0, 0)",
+                "stroke": "none",
+                "fill": "none",
+                "arrow": "none",
                 "text": ""
             })
 

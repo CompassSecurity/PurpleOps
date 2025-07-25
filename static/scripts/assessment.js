@@ -337,7 +337,7 @@ function bgFormatter(value) {
 	} else if (["Ready"].includes(value)){
 		bg = "secondary"	
 	} else if (["Pending"].includes(value)) {
-		bg = "light"
+		bg = ""
 	} else if (["False", false, "0.0", "0.5"].includes(value)) {
 		bg = "dark"
 		text = "light"
