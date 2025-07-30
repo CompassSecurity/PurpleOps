@@ -229,7 +229,6 @@ $("#ttpform").submit(function(e) {
             showToast(`Conflict (409): ${error.responseText}`, "error");
         } else {
             showToast(`Testcase save error - ${error.message}`, "error");
-            console.error(error);
         }
     });
 });
