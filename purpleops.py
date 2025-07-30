@@ -28,6 +28,10 @@ app.register_blueprint(testcase_utils.blueprint_testcase_utils)
 
 me.connect(**app.config["MONGODB_SETTINGS"])
 
+# Get the MongoClient instance and assign it to SESSION_MONGODB which is used by Security
+mongo_client = me.get_connection()
+app.config['SESSION_MONGODB'] = mongo_client
+
 security = Security(app, user_datastore)
 csrf = CSRFProtect(app)
 session_interface = Session(app)
