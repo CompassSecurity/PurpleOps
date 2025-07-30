@@ -12,26 +12,27 @@ blueprint_testcase = Blueprint('blueprint_testcase', __name__)
 @auth_required()
 @roles_accepted('Admin', 'Red')
 @user_assigned_assessment
-def newtestcase(id):
-    newcase = TestCase()
-    newcase.assessmentid = id
-    newcase = applyFormData(newcase, request.form, ["name", "mitreid", "tactic"])
-    newcase.save()
-    return jsonify(newcase.to_json()), 200
+def new_testcase(id):
+    testcase = TestCase()
+    testcase.assessmentid = id
+    testcase = applyFormData(testcase, request.form, ["name", "mitreid", "tactic"])
+    testcase.save()
+    return jsonify(testcase.to_json()), 200
+
 
 @blueprint_testcase.route('/testcase/<id>',methods = ['GET'])
 @auth_required()
 @user_assigned_assessment
-def runtestcasepost(id):
-    testcase = TestCase.objects(id=id).first()
-    assessment = Assessment.objects(id=testcase.assessmentid).first()
-    history_entries = TestCaseHistory.objects(testcaseid=id).order_by('-timestamp')
-
-    if testcase.deleted:
-        return ("", 403)
+def render_testcase(id):
+    testcase = get_testcase_by_id(id)
+    if not testcase or testcase.deleted:
+        return "Test case not found", 404
 
     if not testcase.visible and current_user.has_role("Blue"):
-        return ("", 403)
+        return "", 403
+
+    assessment = Assessment.objects(id=testcase.assessmentid).first()
+    history_entries = TestCaseHistory.objects(testcaseid=id).order_by('-timestamp')
 
     return render_template('testcase.html',
         testcase = testcase,
@@ -55,230 +56,155 @@ def runtestcasepost(id):
         }
     )
 
-def format_time_difference(d1, d2):
 
-    if not d1 or not d2:
-        return None
-
-    if d2 > d1:
-        return None
-
-    delta = abs(d1-d2)
-
-    days = delta.days
-    hours, remainder = divmod(delta.seconds, 3600)
-    minutes, _ = divmod(remainder, 60)
-
-    parts = []
-    if days > 0:
-        parts.append(f"{days}d")
-    if hours > 0 or days > 0:
-        parts.append(f"{hours}h")
-    parts.append(f"{minutes}m")
-
-    return  " ".join(parts)
-
-def calculate_severity_score(severity, expected_severity):
-    severity_levels = {
-        "Critical": ["Critical"],
-        "High": ["Critical", "High"],
-        "Medium": ["Critical", "High", "Medium"],
-        "Low": ["Critical", "High", "Medium", "Low"],
-        "Informational": ["Critical", "High", "Medium", "Low", "Informational"]
-    }
-    if severity and expected_severity:
-        accepted_severity_list = severity_levels.get(expected_severity, [])
-        return 100 if severity in accepted_severity_list else 0
-    return None
-    
 @blueprint_testcase.route('/testcase/<id>',methods = ['POST'])
 @auth_required()
 @roles_accepted('Admin', 'Red', 'Blue')
 @user_assigned_assessment
-def testcasesave(id):
-    testcase = TestCase.objects(id=id).first()
-    isBlue = current_user.has_role("Blue")
+def save_testcase(id):
+    testcase = get_testcase_by_id(id)
+    if not testcase or testcase.deleted:
+        return "Test case not found", 404
 
-    if testcase.deleted:
-        return ("", 403)
+    is_blue = current_user.has_role("Blue")
+    if not testcase.visible and is_blue:
+        return "", 403
 
-    if not testcase.visible and isBlue:
-        return ("", 403)
+    # Access control for Blue team
+    if is_blue:
+        if request.form.get("state") not in ["Waiting Blue", "Waiting Red", None]:
+            return "Not allowed state value", 403
+        if testcase.state not in ["Waiting Blue", "Waiting Red"]:
+            return "State cannot be changed at the moment", 403
 
-    directFields = ["name", "objective", "actions", "rednotes", "bluenotes", "uuid", "mitreid", "tactic", "state", "preventedrating", "alertseverity", "logged", "detectionrating", "priority", "priorityurgency", "expectedseverity", "incidentseverity", "requirements"] if not isBlue else ["bluenotes", "prevented", "alerted", "alertseverity","state", "incidentcreated", "incidentseverity"] 
-    listFields = ["sources", "targets", "tools", "controls", "tags", "preventionsources", "detectionsources"] if not isBlue else ["tags" , "preventionsources", "detectionsources"]
-    boolFields = ["alerted", "logged", "visible", "incidentcreated", "prevented", "expectedincidentcreation", "expectedprevention", "expectedalertcreation"] if not isBlue else ["prevented", "alerted", "logged","incidentcreated"]
-    timeFields = ["starttime", "endtime", "alerttime", "preventtime", "incidenttime"] if not isBlue else ["alerttime", "preventtime", "incidenttime"]
-    fileFields = ["redfiles", "bluefiles"] if not isBlue else ["bluefiles"]
+    # Prevent race condition on concurrent update
+    if request.form.get("modifytime") and request.form.get("modifytime") != str(testcase.modifytime):
+        return "Testcase has been modified in the meantime.", 409
 
-    # only allow state update from blue if correct state is sent and testcase is in changable state
-    if isBlue:
-        if request.form.get("state") != 'Waiting Blue' and request.form.get("state") != 'Waiting Red' and request.form.get("state"):
-            return ("Not allowed state value", 403)
-        if testcase.state != 'Waiting Blue' and testcase.state != 'Waiting Red':
-            return ("State cannot be changed at the moment", 403)
+    # Field categories based on role
+    direct_fields = ["bluenotes", "prevented", "alerted", "alertseverity", "state", "incidentcreated", "incidentseverity"] if is_blue else \
+                    ["name", "objective", "actions", "rednotes", "bluenotes", "uuid", "mitreid", "tactic", "state", "preventedrating", "alertseverity", "logged", "detectionrating", "priority", "priorityurgency", "expectedseverity", "incidentseverity", "requirements"]
 
-    # do not update testcase if it was modified in the meantime
-    if request.form.get("modifytime"):
-        requestmodifytime = request.form.get("modifytime")
-        # ugly string compare of date
-        if requestmodifytime != str(testcase.modifytime):
-            return ("Testcase has been modified in the meantime.", 409)
+    list_fields = ["tags", "preventionsources", "detectionsources"] if is_blue else \
+                  ["sources", "targets", "tools", "controls", "tags", "preventionsources", "detectionsources"]
 
-    testcase = applyFormData(testcase, request.form, directFields)
-    testcase = applyFormListData(testcase, request.form, listFields)
-    testcase = applyFormBoolData(testcase, request.form, boolFields)
-    testcase = applyFormTimeData(testcase, request.form, timeFields)
+    bool_fields = ["prevented", "alerted", "logged", "incidentcreated"] if is_blue else \
+                  ["alerted", "logged", "visible", "incidentcreated", "prevented", "expectedincidentcreation", "expectedprevention", "expectedalertcreation"]
 
-    if not os.path.exists(f"files/{testcase.assessmentid}/{str(testcase.id)}"):
-        os.makedirs(f"files/{testcase.assessmentid}/{str(testcase.id)}")
+    time_fields = ["alerttime", "preventtime", "incidenttime"] if is_blue else \
+                  ["starttime", "endtime", "alerttime", "preventtime", "incidenttime"]
 
-    for field in fileFields:
-        files = []
-        for file in request.files.getlist(field):
-            if request.files.getlist(field)[0].filename:
-                filename = secure_filename(file.filename)
-                path = f"files/{testcase.assessmentid}/{str(testcase.id)}/{filename}"
-                
-                # Check if file already exists
-                if os.path.exists(path):
-                    return (f"File '{filename}' already exists.", 409)
+    file_fields = ["bluefiles"] if is_blue else ["redfiles", "bluefiles"]
 
-                file.save(path)
-                files.append({"name": filename, "path": path, "caption": ""})
-        for file in testcase[field]:
-            if file.name.lower().split(".")[-1] in ["png", "jpg", "jpeg"]:
-                caption = request.form[field.replace("files", "").upper() + file.name]
-            else:
-                caption = ""
-            files.append({
-                "name": secure_filename(file.name),
-                "path": file.path,
-                "caption": caption
-            })
-        if field == "redfiles":
-            testcase.update(set__redfiles=files)
-        else:
-            testcase.update(set__bluefiles=files)
+    # Apply updates
+    testcase = applyFormData(testcase, request.form, direct_fields)
+    testcase = applyFormListData(testcase, request.form, list_fields)
+    testcase = applyFormBoolData(testcase, request.form, bool_fields)
+    testcase = applyFormTimeData(testcase, request.form, time_fields)
+
+    # File handling
+    file_dir = os.path.join("files", str(testcase.assessmentid), str(testcase.id))
+    os.makedirs(file_dir, exist_ok=True)
+
+    for field in file_fields:
+        updated_files = []
+        for uploaded_file in request.files.getlist(field):
+            if uploaded_file.filename:
+                filename = secure_filename(uploaded_file.filename)
+                file_path = os.path.join(file_dir, filename)
+                if os.path.exists(file_path):
+                    return f"File '{filename}' already exists.", 409
+                uploaded_file.save(file_path)
+                updated_files.append({"name": filename, "path": file_path, "caption": ""})
+
+        # Preserve existing files
+        for existing in getattr(testcase, field):
+            caption = request.form.get(field.replace("files", "").upper() + existing.name, "")
+            updated_files.append({"name": secure_filename(existing.name), "path": existing.path, "caption": caption})
+
+        testcase.update(**{f"set__{field}": updated_files})
 
     testcase.modifytime = datetime.utcnow()
-
-    # replace last three digits in the string with "000". Required for comparing utcnow vs. mongodb timestamp
-    mongomodifytime = str(testcase.modifytime)[:-3] + "000"
-
-    if "logged" in request.form and request.form["logged"] == "Yes" and not testcase.detecttime:
+    if request.form.get("logged") == "Yes" and not testcase.detecttime:
         testcase.detecttime = datetime.utcnow()
 
-    # Calculate alert severity score
+    # Scoring and outcome logic
     testcase.alertseverityscore = calculate_severity_score(testcase.alertseverity, testcase.expectedseverity)
-    
-    # Calculate incident severity score
     testcase.incidentseverityscore = calculate_severity_score(testcase.incidentseverity, testcase.expectedseverity)
 
-    # Calculate testcase outcome (Note that Prevented or alerted but not Logged is not catched and will be "missed")
     if not testcase.logged:
         testcase.outcome = "Missed"
+    elif testcase.prevented and testcase.alerted:
+        testcase.outcome = "Prevented and Alerted"
+    elif testcase.prevented:
+        testcase.outcome = "Prevented"
+    elif testcase.alerted:
+        testcase.outcome = "Alerted"
     else:
-        if testcase.prevented and testcase.alerted:
-            testcase.outcome = "Prevented and Alerted"
-        elif testcase.prevented:
-            testcase.outcome = "Prevented"
-        elif testcase.alerted:
-            testcase.outcome = "Alerted"
-        else:
-            testcase.outcome = "Logged"
+        testcase.outcome = "Logged"
 
-    # Calculate testcase score
-    criteriacounter = 1
-    if testcase.expectedalertcreation:
-        criteriacounter = criteriacounter + 1
-    if testcase.expectedprevention:
-        criteriacounter = criteriacounter + 1
-    score = 0
+    expected_criteria = sum([
+        testcase.expectedalertcreation,
+        testcase.expectedprevention,
+        True  # always check logged
+    ])
+    score_unit = 100 / expected_criteria
+    testcase.testcasescore = sum([
+        score_unit if testcase.logged else 0,
+        score_unit if testcase.expectedalertcreation and testcase.alerted else 0,
+        score_unit if testcase.expectedprevention and testcase.prevented else 0
+    ])
 
-    criteriavalue = 100 / criteriacounter
+    testcase.eventtoalert = format_time_difference(testcase.alerttime, testcase.starttime) or ""
+    testcase.alerttoincident = format_time_difference(testcase.incidenttime, testcase.alerttime) or ""
 
-    if testcase.logged:
-        score = score + criteriavalue
-    if testcase.expectedalertcreation and  testcase.alerted:
-        score = score + criteriavalue
-    if testcase.expectedprevention and testcase.prevented:
-        score = score + criteriavalue
-
-    testcase.testcasescore = score
-
-    # Calculate event start time to alert time
-    diff_result = format_time_difference(testcase.alerttime, testcase.starttime)
-    if diff_result is not None:
-        testcase.eventtoalert = diff_result
-    else:
-        testcase.eventtoalert = ""
-
-    # Calculate alert to incident
-    diff_result = format_time_difference(testcase.incidenttime, testcase.alerttime)
-    if diff_result is not None:
-        testcase.alerttoincident = diff_result
-    else:
-        testcase.alerttoincident = ""
-
-    # This is some sanity check code where we check if some of the UI elements are out of sync with the backend. This is trggered by the horrible tabs bug
-    # Does not fix user not saving test case before navigating away
-    # Todo: Turns this BS code into a single mongoengine query against the subdocument list
+    # Sanity check list fields with assessment items
     assessment = Assessment.objects(id=testcase.assessmentid).first()
-    for field in listFields:
-        ids = []
-        valid_ids = []
-        for t in assessment[field]:
-            ids.append(str(t.id))
-        for field_id in testcase[field]:
-            if field_id in ids:
-                valid_ids.append(field_id)
-        testcase[field] = valid_ids
+    for field in list_fields:
+        valid_ids = {str(item.id) for item in assessment[field]}
+        testcase[field] = [id for id in testcase[field] if id in valid_ids]
+
     testcase.save()
 
-    # Save SnapShot to test_case_history collection
-    latest_version = TestCaseHistory.objects(testcaseid=testcase.id).count()
     TestCaseHistory(
         testcaseid=testcase.id,
         testcase_name=testcase.name,
         snapshot=testcase.to_mongo().to_dict(),
-        version=latest_version + 1,
-        modified_by = f"{current_user.username} ({current_user.id})"
+        version=TestCaseHistory.objects(testcaseid=testcase.id).count() + 1,
+        modified_by=f"{current_user.username} ({current_user.id})"
     ).save()
 
-    return (str(mongomodifytime), 200)
+    return str(testcase.modifytime)[:-3] + "000", 200
 
 @blueprint_testcase.route('/testcase/<id>/history/<int:version>', methods=['GET'])
 @auth_required()
 @user_assigned_assessment
 def view_testcase_history_version(id, version):
-    # Check if testcase is delted
-    testcase = TestCase.objects(id=id).first()
-    if testcase.deleted:
-        return("", 404)
+    testcase = get_testcase_by_id(id)
+    if not testcase or testcase.deleted:
+        return "Test case not found", 404
 
-    # Get the historical version
+    is_blue_or_spectator = current_user.has_role("Blue") or current_user.has_role("Spectator")
+    if not testcase.visible and is_blue_or_spectator:
+        return "", 403
+
     history = TestCaseHistory.objects(testcaseid=id, version=version).first()
     if not history:
-        return("", 404)
-    snapshot_data = history.snapshot
+        return "History version not found", 404
 
-    # Convert snapshot into a mock TestCase-like object
-    testcase = TestCase._from_son(snapshot_data)
-    
-    # Get related data
-    assessment = Assessment.objects(id=testcase.assessmentid).first()
+    snapshot = TestCase._from_son(history.snapshot)
+    assessment = Assessment.objects(id=snapshot.assessmentid).first()
 
     return render_template('testcase.html',
-        testcase=testcase,
+        testcase=snapshot,
         testcases=TestCase.objects(assessmentid=str(assessment.id)).all(),
         tactics=Tactic.objects().all(),
         assessment=assessment,
-        kb=KnowlegeBase.objects(mitreid=testcase.mitreid).first(),
-        testcasekb=TestcaseKnowlegeBase.objects(mitreid=testcase.mitreid).first(),
-        templates=TestCaseTemplate.objects(mitreid=testcase.mitreid),
+        kb=KnowlegeBase.objects(mitreid=snapshot.mitreid).first(),
+        testcasekb=TestcaseKnowlegeBase.objects(mitreid=snapshot.mitreid).first(),
+        templates=TestCaseTemplate.objects(mitreid=snapshot.mitreid),
         mitres=[[m["mitreid"], m["name"]] for m in Technique.objects()],
-        sigmas=Sigma.objects(mitreid=testcase.mitreid),
+        sigmas=Sigma.objects(mitreid=snapshot.mitreid),
         multi={
             "sources": assessment.sources,
             "targets": assessment.targets,
@@ -289,7 +215,7 @@ def view_testcase_history_version(id, version):
             "detectionsources": assessment.detectionsources
         },
         history_read_only=True,
-        history_version = history.version,
-        history_modified_by = history.modified_by,
-        history_timestamp = history.timestamp
+        history_version=history.version,
+        history_modified_by=history.modified_by,
+        history_timestamp=history.timestamp
     )
