@@ -197,7 +197,7 @@ def assessmenthexagons(id):
                 cumulatedscore += testcase.testcasescore
                 count += 1
 
-        if count is not 0:
+        if count != 0:
             score = cumulatedscore / count
 
             if score == 100:
