@@ -76,13 +76,14 @@ $("#userDetailForm").submit(function(e) {
 				body.assessments = "-";
 			}
 
+			const safeAssessmentNames = $("<span>").text(body.assessments).html();
 			newRow = {
 				id: body.id,
 				username: body.username,
 				email: body.email,
 				roles: body.roles.length ? body.roles.join(", ") : "-",
 				"last-login": body["last-login"] || "-", // Support dash notation
-				assessments: body.assessments,
+				assessments: safeAssessmentNames,
 				actions: body.username
 			};
 
