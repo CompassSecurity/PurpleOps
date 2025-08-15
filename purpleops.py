@@ -1,10 +1,11 @@
 import os
 from model import *
 from dotenv import load_dotenv
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, session
 from flask_security import Security, auth_required, current_user
-
+from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
+from flask_login import user_logged_in
 
 from blueprints import access, assessment, assessment_utils, assessment_import, assessment_export, testcase, testcase_utils
 
@@ -27,8 +28,13 @@ app.register_blueprint(testcase_utils.blueprint_testcase_utils)
 
 me.connect(**app.config["MONGODB_SETTINGS"])
 
+# Get the MongoClient instance and assign it to SESSION_MONGODB which is used by Security
+mongo_client = me.get_connection()
+app.config['SESSION_MONGODB'] = mongo_client
+
 security = Security(app, user_datastore)
 csrf = CSRFProtect(app)
+session_interface = Session(app)
 
 @app.route('/')
 @app.route('/index')
@@ -47,6 +53,11 @@ def inject_theme():
     if theme not in allowed_themes:
         theme = 'light'
     return dict(theme=theme)
+
+# Session Fixation Prevention Logic
+@user_logged_in.connect_via(app)
+def on_user_logged_in(sender, user, **extra):
+    app.session_interface.regenerate(session)
 
 if __name__ == "__main__":
     app.run(host=os.getenv('HOST'), port=int(os.getenv('PORT')))
