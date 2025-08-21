@@ -119,7 +119,7 @@ function progressFormatter(progress) {
 	return `
 		<div class="progress">
 			<div class="progress-bar bg-success" role="progressbar" style="width: ${progress.split('|')[0]}%"></div>
-			<div class="progress-bar bg-success" role="progressbar" style="width: ${progress.split('|')[1]}%"></div>
+			<div class="progress-bar bg-warning" role="progressbar" style="width: ${progress.split('|')[1]}%"></div>
 			<div class="progress-bar bg-warning" role="progressbar" style="width: ${progress.split('|')[2]}%"></div>
 			<div class="progress-bar bg-warning" role="progressbar" style="width: ${progress.split('|')[3]}%"></div>
 			<div class="progress-bar bg-danger" role="progressbar" style="width: ${progress.split('|')[4]}%"></div>
