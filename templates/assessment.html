@@ -59,8 +59,8 @@
                 <th data-field="tactic" data-sortable="true" data-width="15" data-width-unit="%" data-filter-control="select">Tactic</th>
                 <th data-field="state" data-sortable="true" data-width="15" data-width-unit="%" data-filter-control="select" data-cell-style="bgFormatter">State</th>
                 <th data-field="tags" data-width="15" data-width-unit="%" data-filter-control="input" data-formatter="tagFormatter">Tags</th>
-                <th data-field="start" data-sortable="true" data-width="10" data-width-unit="%" data-visible="{% if current_user.has_role('Blue') %}true{% else %}false{% endif %}" data-filter-control="input" data-formatter="timeFormatter">Start</th>
-                <th data-field="modified" data-sortable="true" data-width="10" data-width-unit="%" data-visible="false" data-filter-control="input" data-formatter="timeFormatter">Modified</th>
+                <th data-field="start" data-sortable="true" data-width="10" data-width-unit="%" data-visible="{% if current_user.has_role('Blue') %}true{% else %}false{% endif %}" data-filter-control="input" data-formatter="timeFormatter">Start Time (UTC)</th>
+                <th data-field="modified" data-sortable="true" data-width="10" data-width-unit="%" data-visible="false" data-filter-control="input" data-formatter="timeFormatter">Modified Time (UTC)</th>
                 <th data-field="priorityurgency" data-sortable="true" data-width="10" data-width-unit="%" data-visible="false" data-filter-control="select" data-cell-style="bgFormatter" class="text-center">Priority</th>
                 <th data-field="detectscore" data-sortable="true" data-width="10" data-width-unit="%" data-visible="false" data-filter-control="input" data-cell-style="bgFormatter" class="text-center">Detection</th>
                 <th data-field="outcome" data-sortable="true" data-width="10" data-width-unit="%" data-visible="false" data-filter-control="input" data-cell-style="bgFormatter">Outcome</th>
@@ -82,7 +82,7 @@
                 <td>{{ t.tactic }}</td>
                 <td>{{ t.state }}</td>
                 <td>{{ t.to_json_multi("tags") | join(",") }}</td>
-                <td>{% if t.starttime %}{{ t.starttime.strftime('%Y-%m-%dT%H:%M') }}{% else %}{% endif %}</td>
+                <td>{% if t.starttime %}{{ t.starttime.strftime('%Y-%m-%dT%H:%M')}}{% else %}{% endif %}</td>
                 <td>{% if t.modifytime %}{{ t.modifytime.strftime('%Y-%m-%dT%H:%M') }}{% else %}{% endif %}</td>
                 <td>{{ t.priorityurgency or "" }}</td>
                 <td>{{ t.detectionrating or "" }}</td>
