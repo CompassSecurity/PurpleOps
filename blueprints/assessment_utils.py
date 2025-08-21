@@ -6,6 +6,7 @@ from utils import user_assigned_assessment
 from flask_security import auth_required, roles_accepted, current_user
 from blueprints.assessment_export import exportnavigator
 from flask import Blueprint, render_template, request, send_from_directory, make_response, jsonify
+import bleach
 
 blueprint_assessment_utils = Blueprint('blueprint_assessment_utils', __name__)
 
@@ -37,11 +38,11 @@ def assessmentmulti(id, field):
                 "detectionsources": Detectionsource(),
             }[field]  # Create new object if ID not found
 
-        obj.name = row["name"]
+        obj.name = bleach.clean(row["name"])
         if field == "tags":
-            obj.colour = row["colour"]
+            obj.colour = bleach.clean(row["colour"])
         else:
-            obj.description = row["description"]
+            obj.description = bleach.clean(row["description"])
 
         if row["id"] not in existing_objs:
             assessment[field].append(obj)  # Append new object instead of replacing the list
