@@ -177,7 +177,7 @@
 					{% if not current_user.has_role("Spectator") %}<option data-icon="bi-gear">Manage</option>{% endif %}
 					<option data-divider="true"></option>
 					{% for tag in multi.tags %}
-						<option {% if tag.id|string in testcase.tags %}selected{% endif %} class="dynopt-tags" value="{{ tag.id }}" data-content="<span class='badge rounded-pill' style='background:{{ tag.colour }}'>{{ tag.name }}</span>">{{ tag.name }}</option>
+						<option {% if tag.id|string in testcase.tags %}selected{% endif %} class="dynopt-tags" value="{{ tag.id }}" data-content="<span class='badge rounded-pill' style='background:{{ tag.colour | e }}'>{{ tag.name | e }}</span>">{{ tag.name }}</option>
 					{% endfor %}
 				</select>
 			</div>
