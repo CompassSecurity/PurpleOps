@@ -325,7 +325,7 @@ function bgFormatter(value) {
 	text = ""
 	if (["Waiting Red","0"].includes(value)) {
 		bg = "danger"
-	} else if (["Running", "25","50","75"].includes(value)) {
+	} else if (["Running", "25","33","50","66","75"].includes(value)) {
 		bg = "warning"
 	} else if (["100"].includes(value)) {
 		bg = "success"

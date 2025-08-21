@@ -258,7 +258,7 @@ class Assessment(db.Document):
             return "0|0|0|0|0"
         
         scores = []
-        for score in ["100", "75","50","25","0"]:
+        for score in ["100", "75","66","50","33","25","0"]:
             scores.append(str(round(
                 TestCase.objects(assessmentid=str(self.id), state=str("Complete"), deleted=False, testcasescore=score).count() /
                 testcases * 100
