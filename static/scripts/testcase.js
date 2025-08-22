@@ -13,6 +13,11 @@ $('.multiNew').click(function(event) {
 // When the source/target etc. table/modal is saved, post updates and refresh table
 $('.multiButton').click(function(event) {
     var csrf_token = $('meta[name="csrf-token"]').attr('content');
+    
+    //anti hammering protection
+    var $btn = $(event.target);
+    $btn.prop("disabled", true);
+
     type = event.target.id.replace("multi", "").replace("Button", "").toLowerCase() + "s" // Hacky
     $.ajax({
         url: `${$("#assessment-crumb-button").attr("href")}/multi/${type}`,
@@ -43,7 +48,13 @@ $('.multiButton').click(function(event) {
             })
             $(`#${type}`).selectpicker('destroy');
             $(`#${type}`).selectpicker();
-        }
+        },
+        error: function(xhr, status, error) {
+            showToast("An unknown error occurred.", "error");
+        },
+        complete: function() {
+            $btn.prop("disabled", false);
+        } 
     });
 })
 
