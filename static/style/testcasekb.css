@@ -151,10 +151,19 @@ details[open] summary {
   background-color: #f0f0f0;
 }
 
-[data-bs-theme=dark] {
-
-details[open] summary {
+[data-bs-theme=dark] details[open] summary {
   background-color: #444;
 }
 
+[data-bs-theme=dark] .highlight button.bi-toggles {
+  background-color: #666;
+  color: #fff;
 }
+
+[data-bs-theme=dark] .highlight button.bi-code {
+  background-color: #666;
+  color: #fff;
+}
+
+}
+
