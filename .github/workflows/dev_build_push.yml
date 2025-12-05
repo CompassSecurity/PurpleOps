@@ -9,6 +9,11 @@ jobs:
     # Only allow running on the dev branch
     if: github.ref == 'refs/heads/dev'
 
+    permissions:
+      contents: write      # Needed to create tags and releases
+      packages: write      # Needed to push to GHCR
+      id-token: write      # For trusted publishing
+
     steps:
       - name: Checkout dev branch
         uses: actions/checkout@v4
