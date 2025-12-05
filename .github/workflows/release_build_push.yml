@@ -6,6 +6,8 @@ on:
 jobs:
   release-and-build:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
     permissions:
       contents: write      # Needed to create tags and releases
       packages: write      # Needed to push to GHCR
