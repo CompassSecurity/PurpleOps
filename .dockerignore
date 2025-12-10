@@ -8,6 +8,7 @@ pytest.ini
 README.md
 TODO.md
 tests/
+compose.yml
 
 # Nix develop
 flake.lock
