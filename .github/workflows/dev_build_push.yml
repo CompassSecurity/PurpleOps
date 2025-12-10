@@ -9,6 +9,11 @@ jobs:
     # Only allow running on the dev branch
     if: github.ref == 'refs/heads/dev'
 
+    permissions:
+      contents: write      # Needed to create tags and releases
+      packages: write      # Needed to push to GHCR
+      id-token: write      # For trusted publishing
+
     steps:
       - name: Checkout dev branch
         uses: actions/checkout@v4
@@ -25,11 +30,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create lowercase repository name
+        id: repo
+        run: echo "name=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
+
       - name: Build and push :dev image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:dev
+          tags: ghcr.io/${{ steps.repo.outputs.name }}:dev
           cache-from: type=gha
           cache-to: type=gha,mode=max
