@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Important for tagging
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Generate tag name from current date
@@ -33,13 +33,15 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create git tag
+      - name: Create git tag and push using token
         if: steps.check_tag.outputs.exists == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag ${{ steps.date.outputs.tag }}
-          git push origin ${{ steps.date.outputs.tag }}
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} ${{ steps.date.outputs.tag }}
 
       - name: Create GitHub Release
         if: steps.check_tag.outputs.exists == 'false'
