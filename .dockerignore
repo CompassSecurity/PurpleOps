@@ -1,0 +1,14 @@
+# Exclude the Git version control folder
+.git
+.gitignore
+.github
+
+# General exclusions
+pytest.ini
+README.md
+TODO.md
+tests/
+
+# Nix develop
+flake.lock
+flake.nix
