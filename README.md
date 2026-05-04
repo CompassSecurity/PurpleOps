@@ -1,3 +1,7 @@
+> [!CAUTION]
+> Checkout our new replacement tool for PurpleOps [RAPTR](https://github.com/CompassSecurity/raptr).
+> This project is no longer maintained.
+
 <h1 align="center">
   <br>
   <a href="https://purpleops.app"><img src="static/images/logo.png" alt="PurpleOps Logo" width="200"></a>
