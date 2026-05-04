@@ -1,5 +1,5 @@
 > [!CAUTION]
-> Checkout our new replacement tool for PurpleOps [RAPTR](https://github.com/CompassSecurity/raptr).
+> Check out [RAPTR](https://github.com/CompassSecurity/raptr). It's our replacement tool for PurpleOps.
 > This project is no longer maintained.
 
 <h1 align="center">
